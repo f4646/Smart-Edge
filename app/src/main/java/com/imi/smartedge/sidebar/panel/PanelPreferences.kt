@@ -341,6 +341,9 @@ class PanelPreferences(context: Context) {
             putBoolean(KEY_TAP_TO_OPEN, DEFAULT_TAP_TO_OPEN)
             putBoolean(KEY_DOUBLE_TAP_TO_OPEN, DEFAULT_DOUBLE_TAP_TO_OPEN)
             putBoolean(KEY_TRIPLE_TAP_TO_OPEN, DEFAULT_TRIPLE_TAP_TO_OPEN)
+            remove(KEY_TAP_ACTION)
+            remove(KEY_DOUBLE_TAP_ACTION)
+            remove(KEY_TRIPLE_TAP_ACTION)
             putString(KEY_ICON_PACK, DEFAULT_ICON_PACK)
             putString(KEY_ICON_PACK_LABEL, "System Default")
             putInt(KEY_BLUR_AMOUNT, DEFAULT_BLUR_AMOUNT)
@@ -487,15 +490,15 @@ class PanelPreferences(context: Context) {
         set(value) = prefs.edit { putBoolean(KEY_TRIPLE_TAP_TO_OPEN, value) }
 
     var tapAction: Int
-        get() = prefs.getInt(KEY_TAP_ACTION, if (tapToOpen) ACTION_OPEN_LAUNCHER else ACTION_NONE)
+        get() = prefs.getInt(KEY_TAP_ACTION, ACTION_NONE)
         set(value) = prefs.edit { putInt(KEY_TAP_ACTION, value) }
 
     var doubleTapAction: Int
-        get() = prefs.getInt(KEY_DOUBLE_TAP_ACTION, if (doubleTapToOpen) ACTION_SCREENSHOT else ACTION_NONE)
+        get() = prefs.getInt(KEY_DOUBLE_TAP_ACTION, ACTION_NONE)
         set(value) = prefs.edit { putInt(KEY_DOUBLE_TAP_ACTION, value) }
 
     var tripleTapAction: Int
-        get() = prefs.getInt(KEY_TRIPLE_TAP_ACTION, if (tripleTapToOpen) ACTION_PREVIOUS_APP else ACTION_NONE)
+        get() = prefs.getInt(KEY_TRIPLE_TAP_ACTION, ACTION_NONE)
         set(value) = prefs.edit { putInt(KEY_TRIPLE_TAP_ACTION, value) }
 
     var gesturesEnabled: Boolean

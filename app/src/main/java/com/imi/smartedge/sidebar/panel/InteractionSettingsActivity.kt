@@ -95,7 +95,7 @@ class InteractionSettingsActivity : AppCompatActivity() {
         binding.featureDeliberateGestureGames.isChecked = panelPrefs.deliberateGestureInGames
         
         val whitelistCount = panelPrefs.getFullscreenWhitelist().size
-        binding.tvFullscreenWhitelistValue.text = if (whitelistCount == 1) "1 app exempt" else "$whitelistCount apps exempt"
+        binding.tvFullscreenWhitelistValue.text = if (whitelistCount == 1) "1 app selected" else "$whitelistCount apps selected"
 
         val gameAppsCount = panelPrefs.getGameApps().size
         binding.tvGameAppsValue.text = if (gameAppsCount == 1) "1 app selected" else "$gameAppsCount apps selected"
@@ -406,9 +406,9 @@ class InteractionSettingsActivity : AppCompatActivity() {
         }
 
         binding.featureFullscreenWhitelist.setOnClickListener {
-            showAppMultiPicker("Select Exempt Apps (Always Show Pill)", panelPrefs.getFullscreenWhitelist()) { newWhitelist ->
+            showAppMultiPicker("Select Apps to Hide Sidebar", panelPrefs.getFullscreenWhitelist()) { newWhitelist ->
                 panelPrefs.setFullscreenWhitelist(newWhitelist)
-                binding.tvFullscreenWhitelistValue.text = if (newWhitelist.size == 1) "1 app exempt" else "${newWhitelist.size} apps exempt"
+                binding.tvFullscreenWhitelistValue.text = if (newWhitelist.size == 1) "1 app selected" else "${newWhitelist.size} apps selected"
                 applyOnly()
             }
         }

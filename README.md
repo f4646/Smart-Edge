@@ -47,6 +47,7 @@
 *   **Icon Customization:** Full support for **Icon Packs** and custom icon shapes (Circle, Squircle, Square).
 *   **Productivity Hub:** Active notifications section with instant **Freeform Window** launching.
 *   **Multitasking:** Drag-and-drop apps to **Split-Screen** or **Freeform** mode.
+*   **Manual Hide:** Select specific apps where the sidebar handle will automatically hide itself.
 
 ---
 

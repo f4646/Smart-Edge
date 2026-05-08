@@ -6,7 +6,20 @@
 
 ---
 
-### v1.3.2 (Latest)
+### v1.3.4 (Latest)
+- **feat(gestures)**: Added advanced tap gesture actions including Back, Home, Recents, Notifications, Quick Settings, Lock Screen, and Power Menu.
+- **feat(gestures)**: Added fully configurable multi-tap gestures (single, double, and triple tap).
+- **feat(sidebar)**: Added ability to manually select specific apps to hide the sidebar in (replaced automatic immersive mode detection).
+- **feat(sidebar)**: Added a dedicated tools folder and navigation system.
+- **fix(ui)**: Fixed stuck drag shadow in freeform/drag-to-split operations.
+- **fix(sidebar)**: Resolved glitchy app sorting and reordering in the sidebar.
+- **fix(service)**: Prevented unintended service restarts when disabled and cleaned up debug artifacts.
+- **chore**: Updated default settings to enable Dashboard/Tools by default, disabled multi-tap/remember-scroll by default.
+- **feat(support)**: Added WebMoney (WMZ) donation option to the Support screen.
+
+---
+
+### v1.3.3
 - **feat(tile)**: Completely rewrote Quick Settings Tile — now matches the Start button behavior exactly with a reliable, seamless toggle.
 - **feat(tile)**: Optimistic UI update — tile switches state instantly on tap, with no visible delay.
 - **feat(tile)**: Haptic feedback on Quick Tile click for tactile confirmation.

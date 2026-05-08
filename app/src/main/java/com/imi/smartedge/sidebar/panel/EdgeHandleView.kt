@@ -212,9 +212,9 @@ class EdgeHandleView @JvmOverloads constructor(
     }
 
     fun updatePill() {
-        val hidePillDueToImmersive = isImmersiveMode && panelPrefs.autoHideInFullscreen && !panelPrefs.isWhitelistedFromAutoHide(panelPrefs.currentForegroundPackage)
+        val hidePillInCurrentApp = panelPrefs.autoHideInFullscreen && panelPrefs.isWhitelistedFromAutoHide(panelPrefs.currentForegroundPackage)
 
-        if (showPill && !hidePillDueToImmersive) {
+        if (showPill && !hidePillInCurrentApp) {
             val cornerRadius = 12 * density
             val shape = android.graphics.drawable.GradientDrawable().apply {
                 shape = android.graphics.drawable.GradientDrawable.RECTANGLE
@@ -265,8 +265,8 @@ class EdgeHandleView @JvmOverloads constructor(
     override fun onTouchEvent(event: MotionEvent): Boolean {
         if (onTrigger == null) return false
         
-        val hidePillDueToImmersive = isImmersiveMode && panelPrefs.autoHideInFullscreen && !panelPrefs.isWhitelistedFromAutoHide(panelPrefs.currentForegroundPackage)
-        if (hidePillDueToImmersive && !isDragMode) return false
+        val hidePillInCurrentApp = panelPrefs.autoHideInFullscreen && panelPrefs.isWhitelistedFromAutoHide(panelPrefs.currentForegroundPackage)
+        if (hidePillInCurrentApp && !isDragMode) return false
 
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {

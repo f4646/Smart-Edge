@@ -87,6 +87,13 @@ class PanelPreferences(context: Context) {
         const val ACTION_OPEN_LAUNCHER = 1
         const val ACTION_SCREENSHOT = 2
         const val ACTION_PREVIOUS_APP = 3
+        const val ACTION_BACK = 4
+        const val ACTION_HOME = 5
+        const val ACTION_RECENTS = 6
+        const val ACTION_NOTIFICATIONS = 7
+        const val ACTION_QUICK_SETTINGS = 8
+        const val ACTION_LOCK_SCREEN = 9
+        const val ACTION_POWER_MENU = 10
 
         const val SIDE_RIGHT = "right"
         const val SIDE_LEFT = "left"
@@ -138,8 +145,8 @@ class PanelPreferences(context: Context) {
         const val DEFAULT_SHOW_LANDSCAPE = true
         const val DEFAULT_PILL_WIDTH = 5
         const val DEFAULT_TAP_TO_OPEN = true
-        const val DEFAULT_DOUBLE_TAP_TO_OPEN = true
-        const val DEFAULT_TRIPLE_TAP_TO_OPEN = true
+        const val DEFAULT_DOUBLE_TAP_TO_OPEN = false
+        const val DEFAULT_TRIPLE_TAP_TO_OPEN = false
         const val DEFAULT_ICON_PACK = "none"
         const val DEFAULT_SHOW_LOGS = false
         const val DEFAULT_BLUR_AMOUNT = 15
@@ -147,7 +154,7 @@ class PanelPreferences(context: Context) {
         const val DEFAULT_PICKER_GAP = 20
         const val DEFAULT_HOME_BUTTON_STYLE = STYLE_POWER
         const val DEFAULT_THEME_MODE = MODE_SYSTEM
-        const val DEFAULT_SHOW_TOOLS = false
+        const val DEFAULT_SHOW_TOOLS = true
         const val DEFAULT_SHOW_TOOLS_PANEL = true
     }
 
@@ -343,7 +350,6 @@ class PanelPreferences(context: Context) {
             putInt(KEY_PICKER_GAP, DEFAULT_PICKER_GAP)
             putBoolean(KEY_SHOW_SYS_INFO, false)
             putBoolean(KEY_SHOW_SCREENSHOT_TOOL, true)
-            putBoolean(KEY_SHOW_TOOLS_PANEL_BUTTON, false)
             putBoolean(KEY_SHOW_POWER_MENU, false)
             putString(KEY_HOME_BUTTON_STYLE, DEFAULT_HOME_BUTTON_STYLE)
             putInt(KEY_THEME_MODE, DEFAULT_THEME_MODE)
@@ -356,7 +362,7 @@ class PanelPreferences(context: Context) {
             putInt(KEY_PICKER_MAX_HEIGHT, 450)
             putBoolean(KEY_SHOW_NOTIFICATION_APPS, false)
             putBoolean(KEY_DRAG_TO_SPLIT, true)
-            putBoolean(KEY_REMEMBER_SCROLL, true)
+            putBoolean(KEY_REMEMBER_SCROLL, false)
             putBoolean(KEY_AUTO_SHOW_KEYBOARD, false)
             putString(KEY_PANEL_APPS, "")
             putInt(KEY_SIDEBAR_SCROLL, 0)
@@ -373,7 +379,7 @@ class PanelPreferences(context: Context) {
         set(value) = prefs.edit { putBoolean(KEY_AUTO_SHOW_KEYBOARD, value) }
 
     var rememberScroll: Boolean
-        get() = prefs.getBoolean(KEY_REMEMBER_SCROLL, true)
+        get() = prefs.getBoolean(KEY_REMEMBER_SCROLL, false)
         set(value) = prefs.edit { putBoolean(KEY_REMEMBER_SCROLL, value) }
 
     var lastSidebarScroll: Int

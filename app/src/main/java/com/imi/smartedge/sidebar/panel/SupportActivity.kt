@@ -32,6 +32,10 @@ class SupportActivity : AppCompatActivity() {
             copyToClipboard("Mobile Number", binding.tvMobileNumber.text.toString())
         }
 
+        binding.btnCopyWebMoney.setOnClickListener {
+            copyToClipboard("WebMoney (WMZ)", binding.tvWebMoney.text.toString())
+        }
+
         binding.btnCopyBinanceId.setOnClickListener {
             copyToClipboard("Binance ID", binding.tvBinanceId.text.toString())
         }

@@ -342,12 +342,12 @@
                         android:id="@+id/feature_auto_hide_fullscreen" 
                         android:layout_width="match_parent" 
                         android:layout_height="wrap_content" 
-                        android:text="Auto-Hide in Full Screen" 
+                        android:text="Hide in Specific Apps" 
                         android:textColor="?attr/colorOnSurface" />
                     <TextView 
                         android:layout_width="wrap_content" 
                         android:layout_height="wrap_content" 
-                        android:text="Hide the pill when watching videos or using immersive apps" 
+                        android:text="Enable hiding the pill in manually selected apps" 
                         android:textColor="?attr/colorOnSurfaceVariant" 
                         android:textSize="11sp" />
 
@@ -365,7 +365,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Full Screen Whitelist"
+                            android:text="Select Apps to Hide Sidebar"
                             android:textColor="?attr/colorOnSurface"
                             android:textSize="16sp" />
 
@@ -373,7 +373,7 @@
                             android:id="@+id/tvFullscreenWhitelistValue"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="0 apps exempt"
+                            android:text="0 apps selected"
                             android:textColor="?attr/colorOnSurfaceVariant"
                             android:textSize="14sp" />
                     </LinearLayout>

@@ -89,7 +89,22 @@ class EdgeHandleView @JvmOverloads constructor(
             PanelPreferences.ACTION_OPEN_LAUNCHER -> triggerPanel()
             PanelPreferences.ACTION_SCREENSHOT -> triggerScreenshot()
             PanelPreferences.ACTION_PREVIOUS_APP -> triggerPreviousApp()
+            PanelPreferences.ACTION_BACK -> triggerAccessibilityAction(PanelAccessibilityService.ACTION_BACK)
+            PanelPreferences.ACTION_HOME -> triggerAccessibilityAction(PanelAccessibilityService.ACTION_HOME)
+            PanelPreferences.ACTION_RECENTS -> triggerAccessibilityAction(PanelAccessibilityService.ACTION_RECENTS)
+            PanelPreferences.ACTION_NOTIFICATIONS -> triggerAccessibilityAction(PanelAccessibilityService.ACTION_NOTIFICATIONS)
+            PanelPreferences.ACTION_QUICK_SETTINGS -> triggerAccessibilityAction(PanelAccessibilityService.ACTION_QUICK_SETTINGS)
+            PanelPreferences.ACTION_LOCK_SCREEN -> triggerAccessibilityAction(PanelAccessibilityService.ACTION_LOCK_SCREEN)
+            PanelPreferences.ACTION_POWER_MENU -> triggerAccessibilityAction(PanelAccessibilityService.ACTION_SHOW_POWER_MENU)
         }
+    }
+
+    private fun triggerAccessibilityAction(action: String) {
+        vibrateHaptic()
+        val intent = Intent(context, PanelAccessibilityService::class.java).apply {
+            this.action = action
+        }
+        context.startService(intent)
     }
 
     private fun triggerPanel() {
@@ -197,9 +212,9 @@ class EdgeHandleView @JvmOverloads constructor(
     }
 
     fun updatePill() {
-        val hidePillDueToImmersive = isImmersiveMode && panelPrefs.autoHideInFullscreen && !panelPrefs.isWhitelistedFromAutoHide(panelPrefs.currentForegroundPackage)
+        val hidePillInCurrentApp = panelPrefs.autoHideInFullscreen && panelPrefs.isWhitelistedFromAutoHide(panelPrefs.currentForegroundPackage)
 
-        if (showPill && !hidePillDueToImmersive) {
+        if (showPill && !hidePillInCurrentApp) {
             val cornerRadius = 12 * density
             val shape = android.graphics.drawable.GradientDrawable().apply {
                 shape = android.graphics.drawable.GradientDrawable.RECTANGLE
@@ -237,7 +252,7 @@ class EdgeHandleView @JvmOverloads constructor(
             }
         } else {
             background = null
-            alpha = 1f
+            alpha = 0f
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 systemGestureExclusionRects = listOf(Rect(0, 0, width, height))
             }
@@ -249,6 +264,9 @@ class EdgeHandleView @JvmOverloads constructor(
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
         if (onTrigger == null) return false
+        
+        val hidePillInCurrentApp = panelPrefs.autoHideInFullscreen && panelPrefs.isWhitelistedFromAutoHide(panelPrefs.currentForegroundPackage)
+        if (hidePillInCurrentApp && !isDragMode) return false
 
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {

@@ -39,6 +39,7 @@ class FloatingPanelService : Service() {
 
     private var isPanelOpen = false
     private var isPickerOpen = false
+    private var isImmersiveMode = false
     private var currentFolderId: String? = null
     private lateinit var panelPrefs: PanelPreferences
     private var lastPickerToggleTime = 0L
@@ -116,7 +117,7 @@ class FloatingPanelService : Service() {
         
         // One-time migration for new defaults
         if (!panelPrefs.toolsFolderMigrated) {
-            panelPrefs.showTools = false
+            panelPrefs.showTools = true
             panelPrefs.showToolsPanelButton = true
             panelPrefs.toolsFolderMigrated = true
         }
@@ -250,8 +251,8 @@ class FloatingPanelService : Service() {
                 handler.postDelayed({ triggerScreenshot() }, 200)
             }
             ACTION_UPDATE_IMMERSIVE -> {
-                val isImmersive = intent.getBooleanExtra("is_immersive", false)
-                edgeHandleView?.isImmersiveMode = isImmersive
+                isImmersiveMode = intent?.getBooleanExtra("is_immersive", false) ?: false
+                edgeHandleView?.isImmersiveMode = isImmersiveMode
             }
             ACTION_SHOW_TEMP -> {
                 addEdgeHandle()
@@ -367,6 +368,7 @@ class FloatingPanelService : Service() {
             }
             isRightSide = isRight
             showPill = isPillVisible
+            isImmersiveMode = this@FloatingPanelService.isImmersiveMode
             alpha = panelPrefs.panelOpacity / 100f
         }
 
@@ -559,8 +561,8 @@ class FloatingPanelService : Service() {
                                 else -> SplitScreenHelper.MODE_FREEFORM
                             }
                             
-                            // Close sidebar BEFORE launching the new app
-                            closePanel(immediate = true)
+                            // Don't close panel IMMEDIATELY here, wait for DRAG_ENDED
+                            // or it can leave a stuck drag shadow on some Android versions.
                             
                             // Delegate to Accessibility Service for higher privilege launch
                             val splitIntent = Intent(this@FloatingPanelService, PanelAccessibilityService::class.java).apply {
@@ -574,11 +576,12 @@ class FloatingPanelService : Service() {
                     }
                     android.view.DragEvent.ACTION_DRAG_ENDED -> {
                         showDragOverlay(false) // Safety cleanup
-                        // If drop wasn't successful (result is false), we might want to keep panel open
-                        if (!event.result) {
-                            // If user just cancelled, do nothing, keep panel open
-                        } else {
-                            closePanel(immediate = true)
+                        // If drop was successful, we close the panel with a small delay
+                        // to ensure the system has finished the drag operation completely.
+                        if (event.result) {
+                            v.postDelayed({
+                                closePanel(immediate = true)
+                            }, 100)
                         }
                         true
                     }
@@ -650,6 +653,9 @@ class FloatingPanelService : Service() {
     }
 
     fun closePanel(immediate: Boolean = false) {
+        // Safety: Don't close if user is still interacting with the trigger handle
+        if (edgeHandleView?.isPressed == true) return
+
         val wasOpen = isPanelOpen
         isPanelOpen = false
         

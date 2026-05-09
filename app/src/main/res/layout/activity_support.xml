@@ -120,6 +120,47 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- WEBMONEY -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/btnCopyWebMoney"
+                style="@style/App_Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="16dp"
+                    android:gravity="center_vertical">
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="WebMoney (WMZ)"
+                            android:textSize="12sp"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
+                        <TextView
+                            android:id="@+id/tvWebMoney"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Z534693669274"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textStyle="bold"
+                            android:textSize="16sp" />
+                    </LinearLayout>
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_copy"
+                        android:tint="?attr/colorOnSurfaceVariant" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- CRYPTO OPTIONS -->
             <TextView
                 android:layout_width="match_parent"

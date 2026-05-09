@@ -95,7 +95,7 @@ class InteractionSettingsActivity : AppCompatActivity() {
         binding.featureDeliberateGestureGames.isChecked = panelPrefs.deliberateGestureInGames
         
         val whitelistCount = panelPrefs.getFullscreenWhitelist().size
-        binding.tvFullscreenWhitelistValue.text = if (whitelistCount == 1) "1 app exempt" else "$whitelistCount apps exempt"
+        binding.tvFullscreenWhitelistValue.text = if (whitelistCount == 1) "1 app selected" else "$whitelistCount apps selected"
 
         val gameAppsCount = panelPrefs.getGameApps().size
         binding.tvGameAppsValue.text = if (gameAppsCount == 1) "1 app selected" else "$gameAppsCount apps selected"
@@ -406,9 +406,9 @@ class InteractionSettingsActivity : AppCompatActivity() {
         }
 
         binding.featureFullscreenWhitelist.setOnClickListener {
-            showAppMultiPicker("Select Exempt Apps (Always Show Pill)", panelPrefs.getFullscreenWhitelist()) { newWhitelist ->
+            showAppMultiPicker("Select Apps to Hide Sidebar", panelPrefs.getFullscreenWhitelist()) { newWhitelist ->
                 panelPrefs.setFullscreenWhitelist(newWhitelist)
-                binding.tvFullscreenWhitelistValue.text = if (newWhitelist.size == 1) "1 app exempt" else "${newWhitelist.size} apps exempt"
+                binding.tvFullscreenWhitelistValue.text = if (newWhitelist.size == 1) "1 app selected" else "${newWhitelist.size} apps selected"
                 applyOnly()
             }
         }
@@ -492,12 +492,31 @@ class InteractionSettingsActivity : AppCompatActivity() {
     }
 
     private fun showActionPicker(title: String, current: Int, onSelect: (Int) -> Unit) {
-        val options = arrayOf("Disabled", "Open Launcher", "Take Screenshot", "Switch to Last App")
+        val options = arrayOf(
+            "Disabled",
+            "Open Launcher",
+            "Take Screenshot",
+            "Switch to Last App",
+            "Back",
+            "Home",
+            "Recent Apps",
+            "Show Notifications",
+            "Show Quick Settings",
+            "Lock Screen",
+            "Power Menu"
+        )
         val values = intArrayOf(
             PanelPreferences.ACTION_NONE,
             PanelPreferences.ACTION_OPEN_LAUNCHER,
             PanelPreferences.ACTION_SCREENSHOT,
-            PanelPreferences.ACTION_PREVIOUS_APP
+            PanelPreferences.ACTION_PREVIOUS_APP,
+            PanelPreferences.ACTION_BACK,
+            PanelPreferences.ACTION_HOME,
+            PanelPreferences.ACTION_RECENTS,
+            PanelPreferences.ACTION_NOTIFICATIONS,
+            PanelPreferences.ACTION_QUICK_SETTINGS,
+            PanelPreferences.ACTION_LOCK_SCREEN,
+            PanelPreferences.ACTION_POWER_MENU
         )
         val selectedIndex = values.indexOf(current).coerceAtLeast(0)
 
@@ -517,6 +536,13 @@ class InteractionSettingsActivity : AppCompatActivity() {
         PanelPreferences.ACTION_OPEN_LAUNCHER -> "Launcher"
         PanelPreferences.ACTION_SCREENSHOT -> "Screenshot"
         PanelPreferences.ACTION_PREVIOUS_APP -> "Last App"
+        PanelPreferences.ACTION_BACK -> "Back"
+        PanelPreferences.ACTION_HOME -> "Home"
+        PanelPreferences.ACTION_RECENTS -> "Recents"
+        PanelPreferences.ACTION_NOTIFICATIONS -> "Notifications"
+        PanelPreferences.ACTION_QUICK_SETTINGS -> "Quick Settings"
+        PanelPreferences.ACTION_LOCK_SCREEN -> "Lock Screen"
+        PanelPreferences.ACTION_POWER_MENU -> "Power Menu"
         else -> "Off"
     }
 }

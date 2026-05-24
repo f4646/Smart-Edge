@@ -294,27 +294,39 @@ class SidePanelView @JvmOverloads constructor(
         setupVolumeRepeat(binding.btnVolumeUp, android.media.AudioManager.ADJUST_RAISE)
         setupVolumeRepeat(binding.btnVolumeDown, android.media.AudioManager.ADJUST_LOWER)
 
-        val performBrightnessChange = { direction: Int, view: View ->
+        val performBrightnessChange = { delta: Int, view: View ->
             if (panelPrefs.hapticEnabled) view.performHapticFeedback(android.view.HapticFeedbackConstants.CONTEXT_CLICK)
             SpringAnimator.scalePulse(view)
             try {
-                val cResolver = context.contentResolver
-                var brightness = android.provider.Settings.System.getInt(cResolver, android.provider.Settings.System.SCREEN_BRIGHTNESS, 125)
-                brightness = (brightness + direction).coerceIn(0, 255)
-                android.provider.Settings.System.putInt(cResolver, android.provider.Settings.System.SCREEN_BRIGHTNESS, brightness)
-                
-                val percent = (brightness * 100) / 255
-                showIndicator("Brightness: $percent%")
-            } catch (e: Exception) {
-                actionRunnables[view.id]?.let { handler.removeCallbacks(it) }
-                android.widget.Toast.makeText(context, "Requires 'Write System Settings' permission", android.widget.Toast.LENGTH_SHORT).show()
-                try {
+                if (!android.provider.Settings.System.canWrite(context)) {
+                    android.widget.Toast.makeText(context, "Requires 'Write System Settings' permission", android.widget.Toast.LENGTH_SHORT).show()
                     val intent = Intent(android.provider.Settings.ACTION_MANAGE_WRITE_SETTINGS).apply {
                         data = android.net.Uri.parse("package:${context.packageName}")
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     }
                     context.startActivity(intent)
-                } catch (ex: Exception) {}
+                } else {
+                    val cResolver = context.contentResolver
+                    // 1. Ensure manual mode
+                    android.provider.Settings.System.putInt(cResolver, 
+                        android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE, 
+                        android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL)
+
+                    // 2. Update standard int brightness
+                    var brightness = android.provider.Settings.System.getInt(cResolver, android.provider.Settings.System.SCREEN_BRIGHTNESS, 125)
+                    brightness = (brightness + delta).coerceIn(0, 255)
+                    android.provider.Settings.System.putInt(cResolver, android.provider.Settings.System.SCREEN_BRIGHTNESS, brightness)
+                    
+                    // 3. Update modern float brightness for slider sync on Android 10+
+                    try {
+                        android.provider.Settings.System.putFloat(cResolver, "screen_brightness_float", brightness / 255f)
+                    } catch (e: Exception) {}
+
+                    val percent = (brightness * 100) / 255
+                    showIndicator("Brightness: $percent%")
+                }
+            } catch (e: Exception) {
+                actionRunnables[view.id]?.let { handler.removeCallbacks(it) }
             }
         }
 

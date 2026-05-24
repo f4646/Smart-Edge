@@ -76,6 +76,9 @@ class PanelPreferences(context: Context) {
         private const val KEY_FULLSCREEN_WHITELIST = "fullscreen_whitelist"
         private const val KEY_DELIBERATE_GESTURE_GAMES = "deliberate_gesture_games"
         private const val KEY_TOOLS_FOLDER_MIGRATED = "tools_folder_migrated"
+        private const val KEY_SLIDE_BRIGHTNESS_ENABLED = "slide_brightness_enabled"
+        private const val KEY_SLIDE_VOLUME_ENABLED = "slide_volume_enabled"
+        private const val KEY_SLIDE_SENSITIVITY = "slide_sensitivity"
 
         private const val KEY_TAP_ACTION = "tap_action"
         private const val KEY_DOUBLE_TAP_ACTION = "double_tap_action"
@@ -156,6 +159,9 @@ class PanelPreferences(context: Context) {
         const val DEFAULT_THEME_MODE = MODE_SYSTEM
         const val DEFAULT_SHOW_TOOLS = true
         const val DEFAULT_SHOW_TOOLS_PANEL = true
+        const val DEFAULT_SLIDE_BRIGHTNESS = true
+        const val DEFAULT_SLIDE_VOLUME = true
+        const val DEFAULT_SLIDE_SENSITIVITY = 100
     }
 
     fun resetUIColors() {
@@ -203,6 +209,7 @@ class PanelPreferences(context: Context) {
             KEY_PICKER_GAP to pickerGap,
             KEY_PANEL_MAX_HEIGHT to panelMaxHeight,
             KEY_PICKER_MAX_HEIGHT to pickerMaxHeight,
+            KEY_SLIDE_SENSITIVITY to slideSensitivity,
             KEY_FREEFORM_CUSTOM_W to freeformCustomWidth,
             KEY_FREEFORM_CUSTOM_H to freeformCustomHeight,
             KEY_THEME_MODE to themeMode
@@ -231,6 +238,8 @@ class PanelPreferences(context: Context) {
             KEY_SHOW_POWER_MENU to showPowerMenu,
             KEY_SHOW_VOLUME_KEYS to showVolumeKeys,
             KEY_SHOW_BRIGHTNESS_KEYS to showBrightnessKeys,
+            KEY_SLIDE_BRIGHTNESS_ENABLED to slideBrightnessEnabled,
+            KEY_SLIDE_VOLUME_ENABLED to slideVolumeEnabled,
             KEY_FREEFORM_ENABLED to freeformEnabled,
             KEY_SHOW_NOTIFICATION_APPS to showNotificationApps,
             KEY_DRAG_TO_SPLIT to dragToSplit,
@@ -277,6 +286,7 @@ class PanelPreferences(context: Context) {
                 if (obj.has(KEY_PICKER_GAP)) putInt(KEY_PICKER_GAP, obj.getInt(KEY_PICKER_GAP))
                 if (obj.has(KEY_PANEL_MAX_HEIGHT)) putInt(KEY_PANEL_MAX_HEIGHT, obj.getInt(KEY_PANEL_MAX_HEIGHT))
                 if (obj.has(KEY_PICKER_MAX_HEIGHT)) putInt(KEY_PICKER_MAX_HEIGHT, obj.getInt(KEY_PICKER_MAX_HEIGHT))
+                if (obj.has(KEY_SLIDE_SENSITIVITY)) putInt(KEY_SLIDE_SENSITIVITY, obj.getInt(KEY_SLIDE_SENSITIVITY))
                 if (obj.has(KEY_FREEFORM_CUSTOM_W)) putInt(KEY_FREEFORM_CUSTOM_W, obj.getInt(KEY_FREEFORM_CUSTOM_W))
                 if (obj.has(KEY_FREEFORM_CUSTOM_H)) putInt(KEY_FREEFORM_CUSTOM_H, obj.getInt(KEY_FREEFORM_CUSTOM_H))
                 if (obj.has(KEY_THEME_MODE)) putInt(KEY_THEME_MODE, obj.getInt(KEY_THEME_MODE))
@@ -302,6 +312,8 @@ class PanelPreferences(context: Context) {
                 if (obj.has(KEY_SHOW_POWER_MENU)) putBoolean(KEY_SHOW_POWER_MENU, obj.getBoolean(KEY_SHOW_POWER_MENU))
                 if (obj.has(KEY_SHOW_VOLUME_KEYS)) putBoolean(KEY_SHOW_VOLUME_KEYS, obj.getBoolean(KEY_SHOW_VOLUME_KEYS))
                 if (obj.has(KEY_SHOW_BRIGHTNESS_KEYS)) putBoolean(KEY_SHOW_BRIGHTNESS_KEYS, obj.getBoolean(KEY_SHOW_BRIGHTNESS_KEYS))
+                if (obj.has(KEY_SLIDE_BRIGHTNESS_ENABLED)) putBoolean(KEY_SLIDE_BRIGHTNESS_ENABLED, obj.getBoolean(KEY_SLIDE_BRIGHTNESS_ENABLED))
+                if (obj.has(KEY_SLIDE_VOLUME_ENABLED)) putBoolean(KEY_SLIDE_VOLUME_ENABLED, obj.getBoolean(KEY_SLIDE_VOLUME_ENABLED))
                 if (obj.has(KEY_FREEFORM_ENABLED)) putBoolean(KEY_FREEFORM_ENABLED, obj.getBoolean(KEY_FREEFORM_ENABLED))
                 if (obj.has(KEY_SHOW_NOTIFICATION_APPS)) putBoolean(KEY_SHOW_NOTIFICATION_APPS, obj.getBoolean(KEY_SHOW_NOTIFICATION_APPS))
                 if (obj.has(KEY_DRAG_TO_SPLIT)) putBoolean(KEY_DRAG_TO_SPLIT, obj.getBoolean(KEY_DRAG_TO_SPLIT))
@@ -354,6 +366,9 @@ class PanelPreferences(context: Context) {
             putBoolean(KEY_SHOW_SYS_INFO, false)
             putBoolean(KEY_SHOW_SCREENSHOT_TOOL, true)
             putBoolean(KEY_SHOW_POWER_MENU, false)
+            putBoolean(KEY_SLIDE_BRIGHTNESS_ENABLED, DEFAULT_SLIDE_BRIGHTNESS)
+            putBoolean(KEY_SLIDE_VOLUME_ENABLED, DEFAULT_SLIDE_VOLUME)
+            putInt(KEY_SLIDE_SENSITIVITY, DEFAULT_SLIDE_SENSITIVITY)
             putString(KEY_HOME_BUTTON_STYLE, DEFAULT_HOME_BUTTON_STYLE)
             putInt(KEY_THEME_MODE, DEFAULT_THEME_MODE)
             putBoolean(KEY_FREEFORM_ENABLED, false)
@@ -592,6 +607,18 @@ class PanelPreferences(context: Context) {
     var toolsFolderMigrated: Boolean
         get() = prefs.getBoolean(KEY_TOOLS_FOLDER_MIGRATED, false)
         set(value) = prefs.edit { putBoolean(KEY_TOOLS_FOLDER_MIGRATED, value) }
+
+    var slideBrightnessEnabled: Boolean
+        get() = prefs.getBoolean(KEY_SLIDE_BRIGHTNESS_ENABLED, DEFAULT_SLIDE_BRIGHTNESS)
+        set(value) = prefs.edit { putBoolean(KEY_SLIDE_BRIGHTNESS_ENABLED, value) }
+
+    var slideVolumeEnabled: Boolean
+        get() = prefs.getBoolean(KEY_SLIDE_VOLUME_ENABLED, DEFAULT_SLIDE_VOLUME)
+        set(value) = prefs.edit { putBoolean(KEY_SLIDE_VOLUME_ENABLED, value) }
+
+    var slideSensitivity: Int
+        get() = prefs.getInt(KEY_SLIDE_SENSITIVITY, DEFAULT_SLIDE_SENSITIVITY)
+        set(value) = prefs.edit { putInt(KEY_SLIDE_SENSITIVITY, value) }
 
     var serviceEnabled: Boolean
         get() = prefs.getBoolean("service_enabled", true)

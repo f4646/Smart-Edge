@@ -83,6 +83,12 @@ class InteractionSettingsActivity : AppCompatActivity() {
         binding.featureGestures.isChecked = panelPrefs.gesturesEnabled
         binding.tvTapGesturesValue.text = "Tap: ${actionLabel(panelPrefs.tapAction)}, 2x: ${actionLabel(panelPrefs.doubleTapAction)}, 3x: ${actionLabel(panelPrefs.tripleTapAction)}"
         binding.featureHaptic.isChecked = panelPrefs.hapticEnabled
+        binding.featureSlideBrightness.isChecked = panelPrefs.slideBrightnessEnabled
+        binding.featureSlideVolume.isChecked = panelPrefs.slideVolumeEnabled
+        binding.sbSlideSensitivity.value = panelPrefs.slideSensitivity.toFloat()
+        binding.tvSlideSensitivityValue.text = "${panelPrefs.slideSensitivity}%"
+        updateSlideSeekUI()
+
         binding.featureShowLandscape.isChecked = panelPrefs.showInLandscape
         binding.featureFreeform.isChecked = panelPrefs.freeformEnabled
         binding.featureNotificationApps.isChecked = panelPrefs.showNotificationApps
@@ -126,6 +132,15 @@ class InteractionSettingsActivity : AppCompatActivity() {
 
         binding.sbPickerGap.value = panelPrefs.pickerGap.toFloat()
         binding.tvPickerGapValue.text = "${panelPrefs.pickerGap}dp"
+    }
+
+    private fun updateSlideSeekUI() {
+        val brightnessOn = panelPrefs.slideBrightnessEnabled
+        val volumeOn = panelPrefs.slideVolumeEnabled
+        val anyOn = brightnessOn || volumeOn
+
+        binding.layoutSlideSensitivity.visibility = if (anyOn) View.VISIBLE else View.GONE
+        binding.layoutSlideZonesHint.visibility = if (brightnessOn && volumeOn) View.VISIBLE else View.GONE
     }
 
     private fun createSidebarShortcut() {
@@ -215,6 +230,40 @@ class InteractionSettingsActivity : AppCompatActivity() {
 
         binding.featureHaptic.setOnCheckedChangeListener { _, isChecked ->
             panelPrefs.hapticEnabled = isChecked
+        }
+
+        binding.featureSlideBrightness.setOnCheckedChangeListener { _, isChecked ->
+            panelPrefs.slideBrightnessEnabled = isChecked
+            updateSlideSeekUI()
+            applyOnly()
+        }
+
+        binding.featureSlideVolume.setOnCheckedChangeListener { _, isChecked ->
+            panelPrefs.slideVolumeEnabled = isChecked
+            updateSlideSeekUI()
+            applyOnly()
+        }
+
+        binding.sbSlideSensitivity.addOnChangeListener { _, value, fromUser ->
+            if (fromUser) {
+                val sens = value.toInt()
+                panelPrefs.slideSensitivity = sens
+                binding.tvSlideSensitivityValue.text = "$sens%"
+            }
+        }
+        binding.sbSlideSensitivity.addOnSliderTouchListener(object : com.google.android.material.slider.Slider.OnSliderTouchListener {
+            override fun onStartTrackingTouch(slider: com.google.android.material.slider.Slider) {}
+            override fun onStopTrackingTouch(slider: com.google.android.material.slider.Slider) {
+                applyOnly()
+            }
+        })
+
+        binding.btnResetSlideSensitivity.setOnClickListener {
+            val default = 100
+            panelPrefs.slideSensitivity = default
+            binding.sbSlideSensitivity.value = default.toFloat()
+            binding.tvSlideSensitivityValue.text = "$default%"
+            applyOnly()
         }
 
         binding.featureShowLandscape.setOnCheckedChangeListener { _, isChecked ->

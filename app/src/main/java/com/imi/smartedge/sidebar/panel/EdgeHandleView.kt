@@ -22,6 +22,8 @@ class EdgeHandleView @JvmOverloads constructor(
 ) : View(context, attrs) {
 
     var onTrigger: (() -> Unit)? = null
+    var onAdjustBrightness: ((delta: Int) -> Unit)? = null
+    var onAdjustVolume: ((delta: Int) -> Unit)? = null
     var onSideChanged: ((newSide: String) -> Unit)? = null
     var isRightSide: Boolean = true
     var showPill: Boolean = true
@@ -41,6 +43,11 @@ class EdgeHandleView @JvmOverloads constructor(
 
     private var startX = 0f
     private var startY = 0f
+    private var lastSlideY = 0f
+    private var accumulatedDy = 0f
+    private var isSlidingSeek = false
+    private var isSlidingVolume = false
+    private var isTopHalf = false
     private var hasPassedThreshold = false
     private var isTriggered = false
 
@@ -272,6 +279,11 @@ class EdgeHandleView @JvmOverloads constructor(
             MotionEvent.ACTION_DOWN -> {
                 startX = event.rawX
                 startY = event.rawY
+                lastSlideY = event.rawY
+                accumulatedDy = 0f
+                isSlidingSeek = false
+                isSlidingVolume = false
+                isTopHalf = event.y < height / 2
                 dragStartRawY = event.rawY
                 downTime = System.currentTimeMillis()
                 hasPassedThreshold = false
@@ -294,9 +306,13 @@ class EdgeHandleView @JvmOverloads constructor(
 
             MotionEvent.ACTION_MOVE -> {
                 val totalDy = event.rawY - dragStartRawY
+                val currentY = event.rawY
+                val dySinceLast = currentY - lastSlideY
+                lastSlideY = currentY
 
                 // ── Drag-reposition mode ──────────────────────────────────────
                 if (isDragMode) {
+                    // ... (existing drag logic)
                     val params = layoutParams as? WindowManager.LayoutParams
                     if (params != null) {
                         val screenH = resources.displayMetrics.heightPixels
@@ -326,6 +342,56 @@ class EdgeHandleView @JvmOverloads constructor(
                         flipSide(PanelPreferences.SIDE_RIGHT)
                     }
                     return true
+                }
+
+                // ── Slide Seek Gesture (Volume/Brightness) ────────────────────
+                val slideEnabled = panelPrefs.slideBrightnessEnabled || panelPrefs.slideVolumeEnabled
+                if (slideEnabled && !hasPassedThreshold && !isTriggered) {
+                    val absDx = Math.abs(event.rawX - startX)
+                    val absDyFromStart = Math.abs(currentY - startY)
+
+                    if (!isSlidingSeek && absDyFromStart > triggerThreshold / 2 && absDyFromStart > absDx * 2) {
+                        val volumeOn = panelPrefs.slideVolumeEnabled
+                        val brightnessOn = panelPrefs.slideBrightnessEnabled
+                        
+                        // Decide if we are sliding volume or brightness
+                        isSlidingVolume = when {
+                            volumeOn && brightnessOn -> isTopHalf // Top = Volume, Bottom = Brightness
+                            volumeOn -> true
+                            else -> false
+                        }
+                        
+                        isSlidingSeek = true
+                        accumulatedDy = 0f // Start fresh to avoid the "trigger jump"
+                        handler.removeCallbacks(dragModeRunnable)
+                        handler.removeCallbacks(holdRunnable)
+                        vibrateHaptic(10)
+                    }
+
+                    if (isSlidingSeek) {
+                        accumulatedDy += dySinceLast
+                        val sensitivity = panelPrefs.slideSensitivity.coerceIn(1, 200)
+                        val multiplier = 100f / sensitivity
+                        
+                        if (isSlidingVolume) {
+                            // Volume: ~25dp = 1 step at 100 sens (Balanced control for 15 steps)
+                            val pixelsPerUnit = (25f * density * multiplier).coerceAtLeast(1f)
+                            if (Math.abs(accumulatedDy) >= pixelsPerUnit) {
+                                val units = (accumulatedDy / pixelsPerUnit).toInt()
+                                onAdjustVolume?.invoke(-units)
+                                accumulatedDy -= units * pixelsPerUnit
+                            }
+                        } else {
+                            // Brightness: ~3dp = 1 step at 100 sens (Balanced for 255 steps)
+                            val pixelsPerUnit = (3f * density * multiplier).coerceAtLeast(1f)
+                            if (Math.abs(accumulatedDy) >= pixelsPerUnit) {
+                                val units = (accumulatedDy / pixelsPerUnit).toInt()
+                                onAdjustBrightness?.invoke(-units)
+                                accumulatedDy -= units * pixelsPerUnit
+                            }
+                        }
+                        return true
+                    }
                 }
 
                 // ── Normal panel-open gesture ─────────────────────────────────
@@ -391,13 +457,15 @@ class EdgeHandleView @JvmOverloads constructor(
                     animate().scaleX(1f).scaleY(1f).setDuration(150).start()
                 }
 
-                if (!hasPassedThreshold && !isTriggered && event.action == MotionEvent.ACTION_UP) {
+                if (!hasPassedThreshold && !isTriggered && !isSlidingSeek && event.action == MotionEvent.ACTION_UP) {
                     val duration = System.currentTimeMillis() - downTime
                     if (duration < ViewConfiguration.getLongPressTimeout()) {
                         handleTap()
                     }
                 }
 
+                isSlidingSeek = false
+                isSlidingVolume = false
                 hasPassedThreshold = false
                 return true
             }

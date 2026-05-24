@@ -352,6 +352,12 @@ class FloatingPanelService : Service() {
                     openPanel()
                 }
             }
+            onAdjustBrightness = { delta ->
+                adjustBrightness(delta)
+            }
+            onAdjustVolume = { delta ->
+                adjustVolume(delta)
+            }
             onSideChanged = { newSide ->
                 // Pill was dragged to the opposite edge — sync the whole service
                 val sideIsRight = newSide == PanelPreferences.SIDE_RIGHT
@@ -1011,9 +1017,15 @@ class FloatingPanelService : Service() {
         }
     }
 
-    fun adjustVolume(direction: Int) {
+    fun adjustVolume(delta: Int) {
+        if (delta == 0) return
         val audioManager = getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
-        audioManager.adjustStreamVolume(android.media.AudioManager.STREAM_MUSIC, direction, 0)
+        val direction = if (delta > 0) android.media.AudioManager.ADJUST_RAISE else android.media.AudioManager.ADJUST_LOWER
+        
+        // Repeat the adjustment for the magnitude of delta to maintain speed
+        repeat(Math.abs(delta)) {
+            audioManager.adjustStreamVolume(android.media.AudioManager.STREAM_MUSIC, direction, 0)
+        }
         
         val current = audioManager.getStreamVolume(android.media.AudioManager.STREAM_MUSIC)
         val max = audioManager.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC)
@@ -1021,24 +1033,50 @@ class FloatingPanelService : Service() {
         showIndicator("Volume: $percent%")
     }
 
-    fun adjustBrightness(direction: Int) {
+    fun adjustBrightness(delta: Int) {
+        if (delta == 0) return
         try {
-            val cResolver = contentResolver
-            var brightness = android.provider.Settings.System.getInt(cResolver, android.provider.Settings.System.SCREEN_BRIGHTNESS, 125)
-            brightness = (brightness + direction).coerceIn(0, 255)
-            android.provider.Settings.System.putInt(cResolver, android.provider.Settings.System.SCREEN_BRIGHTNESS, brightness)
-            
-            val percent = (brightness * 100) / 255
-            showIndicator("Brightness: $percent%")
-        } catch (e: Exception) {
-            android.widget.Toast.makeText(this, "Requires 'Write System Settings' permission", android.widget.Toast.LENGTH_SHORT).show()
-            try {
+            if (!android.provider.Settings.System.canWrite(this)) {
+                android.widget.Toast.makeText(this, "Requires 'Write System Settings' permission", android.widget.Toast.LENGTH_SHORT).show()
                 val intent = Intent(android.provider.Settings.ACTION_MANAGE_WRITE_SETTINGS).apply {
                     data = android.net.Uri.parse("package:$packageName")
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
                 startActivity(intent)
-            } catch (ex: Exception) {}
+                return
+            }
+
+            val cResolver = contentResolver
+            // 1. Ensure manual mode to allow manual override
+            android.provider.Settings.System.putInt(cResolver, 
+                android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE, 
+                android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL)
+
+            // 2. Update standard int brightness (0-255)
+            var brightness = android.provider.Settings.System.getInt(cResolver, android.provider.Settings.System.SCREEN_BRIGHTNESS, 125)
+            brightness = (brightness + delta).coerceIn(0, 255)
+            android.provider.Settings.System.putInt(cResolver, android.provider.Settings.System.SCREEN_BRIGHTNESS, brightness)
+            
+            // 3. Update modern float brightness for slider sync on Android 10+
+            val floatVal = brightness / 255f
+            try {
+                android.provider.Settings.System.putFloat(cResolver, "screen_brightness_float", floatVal)
+            } catch (e: Exception) {
+                try {
+                    android.provider.Settings.System.putString(cResolver, "screen_brightness_float", floatVal.toString())
+                } catch (e2: Exception) {}
+            }
+
+            // Force a notification change to refresh system UI slider
+            try {
+                cResolver.notifyChange(android.provider.Settings.System.getUriFor(android.provider.Settings.System.SCREEN_BRIGHTNESS), null)
+                cResolver.notifyChange(android.provider.Settings.System.getUriFor("screen_brightness_float"), null)
+            } catch (e: Exception) {}
+
+            val percent = (brightness * 100) / 255
+            showIndicator("Brightness: $percent%")
+        } catch (e: Exception) {
+            android.util.Log.e("FloatingPanelService", "Failed to adjust brightness", e)
         }
     }
 

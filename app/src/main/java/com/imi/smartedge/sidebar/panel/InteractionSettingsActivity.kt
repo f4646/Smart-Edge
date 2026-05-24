@@ -81,6 +81,10 @@ class InteractionSettingsActivity : AppCompatActivity() {
 
         binding.featureAutoStart.isChecked = panelPrefs.autoStart
         binding.featureGestures.isChecked = panelPrefs.gesturesEnabled
+        binding.sbSwipeSensitivity.value = panelPrefs.swipeSensitivity.toFloat()
+        binding.tvSwipeSensitivityValue.text = "${panelPrefs.swipeSensitivity}%"
+        binding.layoutSwipeSensitivity.visibility = if (panelPrefs.gesturesEnabled) View.VISIBLE else View.GONE
+        
         binding.tvTapGesturesValue.text = "Tap: ${actionLabel(panelPrefs.tapAction)}, 2x: ${actionLabel(panelPrefs.doubleTapAction)}, 3x: ${actionLabel(panelPrefs.tripleTapAction)}"
         binding.featureHaptic.isChecked = panelPrefs.hapticEnabled
         binding.featureSlideBrightness.isChecked = panelPrefs.slideBrightnessEnabled
@@ -210,6 +214,29 @@ class InteractionSettingsActivity : AppCompatActivity() {
 
         binding.featureGestures.setOnCheckedChangeListener { _, isChecked ->
             panelPrefs.gesturesEnabled = isChecked
+            binding.layoutSwipeSensitivity.visibility = if (isChecked) View.VISIBLE else View.GONE
+            applyOnly()
+        }
+
+        binding.sbSwipeSensitivity.addOnChangeListener { _, value, fromUser ->
+            if (fromUser) {
+                val sens = value.toInt()
+                panelPrefs.swipeSensitivity = sens
+                binding.tvSwipeSensitivityValue.text = "$sens%"
+            }
+        }
+        binding.sbSwipeSensitivity.addOnSliderTouchListener(object : com.google.android.material.slider.Slider.OnSliderTouchListener {
+            override fun onStartTrackingTouch(slider: com.google.android.material.slider.Slider) {}
+            override fun onStopTrackingTouch(slider: com.google.android.material.slider.Slider) {
+                applyOnly()
+            }
+        })
+
+        binding.btnResetSwipeSensitivity.setOnClickListener {
+            val default = 100
+            panelPrefs.swipeSensitivity = default
+            binding.sbSwipeSensitivity.value = default.toFloat()
+            binding.tvSwipeSensitivityValue.text = "$default%"
             applyOnly()
         }
 

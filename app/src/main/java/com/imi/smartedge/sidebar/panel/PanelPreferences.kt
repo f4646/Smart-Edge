@@ -79,6 +79,7 @@ class PanelPreferences(context: Context) {
         private const val KEY_SLIDE_BRIGHTNESS_ENABLED = "slide_brightness_enabled"
         private const val KEY_SLIDE_VOLUME_ENABLED = "slide_volume_enabled"
         private const val KEY_SLIDE_SENSITIVITY = "slide_sensitivity"
+        private const val KEY_SWIPE_SENSITIVITY = "swipe_sensitivity"
 
         private const val KEY_TAP_ACTION = "tap_action"
         private const val KEY_DOUBLE_TAP_ACTION = "double_tap_action"
@@ -162,6 +163,7 @@ class PanelPreferences(context: Context) {
         const val DEFAULT_SLIDE_BRIGHTNESS = true
         const val DEFAULT_SLIDE_VOLUME = true
         const val DEFAULT_SLIDE_SENSITIVITY = 100
+        const val DEFAULT_SWIPE_SENSITIVITY = 100
     }
 
     fun resetUIColors() {
@@ -210,6 +212,7 @@ class PanelPreferences(context: Context) {
             KEY_PANEL_MAX_HEIGHT to panelMaxHeight,
             KEY_PICKER_MAX_HEIGHT to pickerMaxHeight,
             KEY_SLIDE_SENSITIVITY to slideSensitivity,
+            KEY_SWIPE_SENSITIVITY to swipeSensitivity,
             KEY_FREEFORM_CUSTOM_W to freeformCustomWidth,
             KEY_FREEFORM_CUSTOM_H to freeformCustomHeight,
             KEY_THEME_MODE to themeMode
@@ -287,6 +290,7 @@ class PanelPreferences(context: Context) {
                 if (obj.has(KEY_PANEL_MAX_HEIGHT)) putInt(KEY_PANEL_MAX_HEIGHT, obj.getInt(KEY_PANEL_MAX_HEIGHT))
                 if (obj.has(KEY_PICKER_MAX_HEIGHT)) putInt(KEY_PICKER_MAX_HEIGHT, obj.getInt(KEY_PICKER_MAX_HEIGHT))
                 if (obj.has(KEY_SLIDE_SENSITIVITY)) putInt(KEY_SLIDE_SENSITIVITY, obj.getInt(KEY_SLIDE_SENSITIVITY))
+                if (obj.has(KEY_SWIPE_SENSITIVITY)) putInt(KEY_SWIPE_SENSITIVITY, obj.getInt(KEY_SWIPE_SENSITIVITY))
                 if (obj.has(KEY_FREEFORM_CUSTOM_W)) putInt(KEY_FREEFORM_CUSTOM_W, obj.getInt(KEY_FREEFORM_CUSTOM_W))
                 if (obj.has(KEY_FREEFORM_CUSTOM_H)) putInt(KEY_FREEFORM_CUSTOM_H, obj.getInt(KEY_FREEFORM_CUSTOM_H))
                 if (obj.has(KEY_THEME_MODE)) putInt(KEY_THEME_MODE, obj.getInt(KEY_THEME_MODE))
@@ -369,6 +373,7 @@ class PanelPreferences(context: Context) {
             putBoolean(KEY_SLIDE_BRIGHTNESS_ENABLED, DEFAULT_SLIDE_BRIGHTNESS)
             putBoolean(KEY_SLIDE_VOLUME_ENABLED, DEFAULT_SLIDE_VOLUME)
             putInt(KEY_SLIDE_SENSITIVITY, DEFAULT_SLIDE_SENSITIVITY)
+            putInt(KEY_SWIPE_SENSITIVITY, DEFAULT_SWIPE_SENSITIVITY)
             putString(KEY_HOME_BUTTON_STYLE, DEFAULT_HOME_BUTTON_STYLE)
             putInt(KEY_THEME_MODE, DEFAULT_THEME_MODE)
             putBoolean(KEY_FREEFORM_ENABLED, false)
@@ -619,6 +624,10 @@ class PanelPreferences(context: Context) {
     var slideSensitivity: Int
         get() = prefs.getInt(KEY_SLIDE_SENSITIVITY, DEFAULT_SLIDE_SENSITIVITY)
         set(value) = prefs.edit { putInt(KEY_SLIDE_SENSITIVITY, value) }
+
+    var swipeSensitivity: Int
+        get() = prefs.getInt(KEY_SWIPE_SENSITIVITY, DEFAULT_SWIPE_SENSITIVITY)
+        set(value) = prefs.edit { putInt(KEY_SWIPE_SENSITIVITY, value) }
 
     var serviceEnabled: Boolean
         get() = prefs.getBoolean("service_enabled", true)

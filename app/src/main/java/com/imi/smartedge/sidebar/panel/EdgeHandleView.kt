@@ -434,10 +434,15 @@ class EdgeHandleView @JvmOverloads constructor(
                 if (!panelPrefs.gesturesEnabled || isTriggered) return true
                 val dx = if (isRightSide) (startX - event.rawX) else (event.rawX - startX)
                 
+                // Sensitivity scaling: 100% = base (16dp), 200% = 8dp, 50% = 32dp
+                val sensitivity = panelPrefs.swipeSensitivity.coerceIn(10, 300)
+                val baseThreshold = 16 * density
+                val scaledThreshold = baseThreshold * (100f / sensitivity)
+                
                 val effectiveThreshold = if (isGameActive && panelPrefs.deliberateGestureInGames) {
-                    triggerThreshold * 2.5f 
+                    scaledThreshold * 2.5f 
                 } else {
-                    triggerThreshold
+                    scaledThreshold
                 }
 
                 if (dx > triggerThreshold) {
@@ -486,6 +491,11 @@ class EdgeHandleView @JvmOverloads constructor(
 
                 if (showPill && !isTriggered && panelPrefs.gesturesEnabled) {
                     animate().scaleX(1f).scaleY(1f).setDuration(150).start()
+                }
+
+                if (hasPassedThreshold && !isTriggered) {
+                    triggerPanel()
+                    isTriggered = true
                 }
 
                 if (!hasPassedThreshold && !isTriggered && !isSlidingSeek && event.action == MotionEvent.ACTION_UP) {

@@ -111,13 +111,27 @@ class SecureSettingsDialog : BottomSheetDialogFragment() {
         }
         val isGranted = ctx.checkSelfPermission(Manifest.permission.WRITE_SECURE_SETTINGS) == PackageManager.PERMISSION_GRANTED
         val tvStatus = TextView(ctx).apply {
-            text = if (isGranted) "Status: Active" else "Status: Inactive"
+            text = if (isGranted) "Permission: Granted" else "Permission: Missing"
             textSize = 12f
             setTextColor(if (isGranted) Color.parseColor("#00FF00") else Color.parseColor("#99FFFFFF"))
             if (isGranted) typeface = Typeface.DEFAULT_BOLD
         }
         titleCol.addView(tvTitle)
         titleCol.addView(tvStatus)
+
+        // Add Automation Status
+        val tvAutoStatus = TextView(ctx).apply {
+            val autoStatus = when {
+                AutomationManager.isRootAvailable() -> "Engine: Root Active"
+                AutomationManager.isShizukuAvailable() -> "Engine: Shizuku Active"
+                else -> "Engine: Service Not Running"
+            }
+            text = autoStatus
+            textSize = 11f
+            setTextColor(Color.parseColor("#B3FFFFFF"))
+            setPadding(0, (2 * density).toInt(), 0, 0)
+        }
+        titleCol.addView(tvAutoStatus)
         headerRow.addView(titleCol)
         root.addView(headerRow)
 

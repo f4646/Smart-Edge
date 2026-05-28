@@ -50,6 +50,7 @@ class PanelPreferences(context: Context) {
         private const val KEY_BLUR_AMOUNT = "blur_amount"
         private const val KEY_SHOW_LOGS = "show_logs"
         private const val KEY_ANIM_SPEED = "animation_speed"
+        private const val KEY_PICKER_ANIM_TYPE = "picker_anim_type"
         private const val KEY_PICKER_GAP = "picker_gap"
         private const val KEY_SHOW_SYS_INFO = "show_sys_info"
         private const val KEY_SHOW_SCREENSHOT_TOOL = "show_screenshot_tool"
@@ -99,6 +100,9 @@ class PanelPreferences(context: Context) {
         const val ACTION_QUICK_SETTINGS = 8
         const val ACTION_LOCK_SCREEN = 9
         const val ACTION_POWER_MENU = 10
+
+        const val ANIM_TYPE_SLIDE = "slide"
+        const val ANIM_TYPE_POPUP = "popup"
 
         const val SIDE_RIGHT = "right"
         const val SIDE_LEFT = "left"
@@ -156,6 +160,7 @@ class PanelPreferences(context: Context) {
         const val DEFAULT_SHOW_LOGS = false
         const val DEFAULT_BLUR_AMOUNT = 15
         const val DEFAULT_ANIM_SPEED = 400
+        const val DEFAULT_PICKER_ANIM = ANIM_TYPE_POPUP
         const val DEFAULT_PICKER_GAP = 20
         const val DEFAULT_HOME_BUTTON_STYLE = STYLE_POWER
         const val DEFAULT_THEME_MODE = MODE_SYSTEM
@@ -219,6 +224,8 @@ class PanelPreferences(context: Context) {
             KEY_THEME_MODE to themeMode
         )
         ints.forEach { (k, v) -> obj.put(k, v) }
+        
+        obj.put(KEY_PICKER_ANIM_TYPE, pickerAnimType)
 
         // Floats
         obj.put(KEY_SCALE_FACTOR, scaleFactor.toDouble())
@@ -287,6 +294,7 @@ class PanelPreferences(context: Context) {
                 if (obj.has(KEY_PILL_WIDTH)) putInt(KEY_PILL_WIDTH, obj.getInt(KEY_PILL_WIDTH))
                 if (obj.has(KEY_BLUR_AMOUNT)) putInt(KEY_BLUR_AMOUNT, obj.getInt(KEY_BLUR_AMOUNT))
                 if (obj.has(KEY_ANIM_SPEED)) putInt(KEY_ANIM_SPEED, obj.getInt(KEY_ANIM_SPEED))
+                if (obj.has(KEY_PICKER_ANIM_TYPE)) putString(KEY_PICKER_ANIM_TYPE, obj.getString(KEY_PICKER_ANIM_TYPE))
                 if (obj.has(KEY_PICKER_GAP)) putInt(KEY_PICKER_GAP, obj.getInt(KEY_PICKER_GAP))
                 if (obj.has(KEY_PANEL_MAX_HEIGHT)) putInt(KEY_PANEL_MAX_HEIGHT, obj.getInt(KEY_PANEL_MAX_HEIGHT))
                 if (obj.has(KEY_PICKER_MAX_HEIGHT)) putInt(KEY_PICKER_MAX_HEIGHT, obj.getInt(KEY_PICKER_MAX_HEIGHT))
@@ -332,7 +340,7 @@ class PanelPreferences(context: Context) {
     }
 
     fun resetToDefaults() {
-        prefs.edit {
+        prefs.edit(commit = true) {
             putString(KEY_PANEL_SIDE, DEFAULT_SIDE)
             putBoolean(KEY_AUTO_START, DEFAULT_AUTO_START)
             putBoolean(KEY_SHOW_PILL, DEFAULT_SHOW_PILL)
@@ -367,10 +375,13 @@ class PanelPreferences(context: Context) {
             putBoolean(KEY_BLUR_ENABLED, false)
             putBoolean(KEY_SHOW_LOGS, false)
             putInt(KEY_ANIM_SPEED, DEFAULT_ANIM_SPEED)
+            putString(KEY_PICKER_ANIM_TYPE, DEFAULT_PICKER_ANIM)
             putInt(KEY_PICKER_GAP, DEFAULT_PICKER_GAP)
             putBoolean(KEY_SHOW_SYS_INFO, false)
             putBoolean(KEY_SHOW_SCREENSHOT_TOOL, true)
             putBoolean(KEY_SHOW_POWER_MENU, false)
+            putBoolean(KEY_SHOW_VOLUME_KEYS, false)
+            putBoolean(KEY_SHOW_BRIGHTNESS_KEYS, false)
             putBoolean(KEY_SLIDE_BRIGHTNESS_ENABLED, DEFAULT_SLIDE_BRIGHTNESS)
             putBoolean(KEY_SLIDE_VOLUME_ENABLED, DEFAULT_SLIDE_VOLUME)
             putInt(KEY_SLIDE_SENSITIVITY, DEFAULT_SLIDE_SENSITIVITY)
@@ -390,6 +401,10 @@ class PanelPreferences(context: Context) {
             putBoolean(KEY_REMEMBER_SCROLL, false)
             putBoolean(KEY_AUTO_SHOW_KEYBOARD, false)
             putString(KEY_PANEL_APPS, "")
+            putString(KEY_GAME_APPS, "")
+            putBoolean(KEY_AUTO_HIDE_FULLSCREEN, false)
+            putString(KEY_FULLSCREEN_WHITELIST, "")
+            putBoolean(KEY_DELIBERATE_GESTURE_GAMES, true)
             putInt(KEY_SIDEBAR_SCROLL, 0)
             putInt(KEY_PICKER_SCROLL, 0)
         }
@@ -606,6 +621,10 @@ class PanelPreferences(context: Context) {
     var animSpeed: Int
         get() = prefs.getInt(KEY_ANIM_SPEED, DEFAULT_ANIM_SPEED)
         set(value) = prefs.edit { putInt(KEY_ANIM_SPEED, value) }
+
+    var pickerAnimType: String
+        get() = prefs.getString(KEY_PICKER_ANIM_TYPE, DEFAULT_PICKER_ANIM) ?: DEFAULT_PICKER_ANIM
+        set(value) = prefs.edit { putString(KEY_PICKER_ANIM_TYPE, value) }
 
     var setupCompleted: Boolean
         get() = prefs.getBoolean("setup_completed_v2", false)

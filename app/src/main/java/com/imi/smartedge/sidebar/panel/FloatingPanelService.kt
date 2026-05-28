@@ -784,7 +784,8 @@ class FloatingPanelService : Service() {
                 if (pickerWidth <= 0) return@post // Wait for layout if not ready
                 val startX = if (isRight) -pickerWidth else pickerWidth
                 val stiffness = panelPrefs.animSpeed.toFloat()
-                SpringAnimator.animateOpen(picker, startX, isPicker = true, stiffness = stiffness)
+                val useSlide = panelPrefs.pickerAnimType == PanelPreferences.ANIM_TYPE_SLIDE
+                SpringAnimator.animateOpen(picker, startX, isPicker = true, stiffness = stiffness, slide = useSlide)
             }
         }
     }
@@ -806,7 +807,8 @@ class FloatingPanelService : Service() {
             val isRight = panelPrefs.panelSide == PanelPreferences.SIDE_RIGHT
             val pickerWidth = picker.width.toFloat()
             val stiffness = panelPrefs.animSpeed.toFloat()
-            SpringAnimator.animateClose(picker, if (isRight) pickerWidth else -pickerWidth, isPicker = true, stiffness = stiffness) {
+            val useSlide = panelPrefs.pickerAnimType == PanelPreferences.ANIM_TYPE_SLIDE
+            SpringAnimator.animateClose(picker, if (isRight) pickerWidth else -pickerWidth, isPicker = true, stiffness = stiffness, slide = useSlide) {
                 if (!isPickerOpen) {
                     picker.visibility = View.GONE
                 }

@@ -462,8 +462,9 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         binding.btnSelectIconPack.setOnClickListener {
-            val intent = Intent(this, IconPackActivity::class.java)
-            startActivity(intent)
+            IconPackPickerDialog.show(this) {
+                // No specific UI to update here as it's a simple list
+            }
         }
 
         binding.switchTools.setOnCheckedChangeListener { _, isChecked ->

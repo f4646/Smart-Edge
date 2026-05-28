@@ -248,7 +248,11 @@ class AppPickerPanelView @JvmOverloads constructor(
         if (lastMaxPx == -1) return
         
         val lp = rvPickerGrid.layoutParams
-        val itemsCount = adapter.itemCount
+        
+        // Use the total number of apps to determine the "normal" height,
+        // so the panel doesn't shrink while searching.
+        val itemsCount = if (etSearch.text.isEmpty()) adapter.itemCount else allApps.size
+        
         if (itemsCount == 0) {
             lp.height = ViewGroup.LayoutParams.WRAP_CONTENT
             rvPickerGrid.layoutParams = lp

@@ -164,9 +164,10 @@ class MainActivity : AppCompatActivity(), android.content.SharedPreferences.OnSh
             val statusSuffix = when {
                 automationActive && AutomationManager.isRootAvailable() -> " (Root)"
                 automationActive && AutomationManager.isShizukuAvailable() -> " (Shizuku)"
+                panelPrefs.useAutomationForGestures -> " (Service Stopped)"
                 else -> ""
             }
-            binding.tvStatus.text = if (automationActive) "Active$statusSuffix" else "Service is Active"
+            binding.tvStatus.text = if (automationActive) "Active$statusSuffix" else if (panelPrefs.useAutomationForGestures) "Automation Stopped" else "Service is Active"
             theme.resolveAttribute(com.google.android.material.R.attr.colorOnSurface, typedValue, true)
             binding.tvStatus.setTextColor(typedValue.data)
             binding.statusDot.imageTintList = android.content.res.ColorStateList.valueOf(Color.parseColor("#2ECC71"))

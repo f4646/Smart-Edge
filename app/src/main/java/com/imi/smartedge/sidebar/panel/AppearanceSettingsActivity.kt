@@ -274,7 +274,9 @@ class AppearanceSettingsActivity : AppCompatActivity() {
         }
 
         binding.btnSelectIconPack.setOnClickListener {
-            startActivity(Intent(this, IconPackActivity::class.java))
+            IconPackPickerDialog.show(this) {
+                binding.tvCurrentIconPack.text = panelPrefs.iconPackLabel
+            }
         }
 
         binding.btnResetUIColors.setOnClickListener {

@@ -62,4 +62,9 @@
     <style name="ShapeAppearanceOverlay_App_Corner50" parent="">
         <item name="cornerSize">50%</item>
     </style>
+
+    <style name="ModernDialog" parent="Theme.Material3.Dark.Dialog.Alert">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="background">@android:color/transparent</item>
+    </style>
 </resources>

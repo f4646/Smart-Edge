@@ -86,7 +86,7 @@ class InteractionSettingsActivity : AppCompatActivity() {
         binding.tvSwipeSensitivityValue.text = "${panelPrefs.swipeSensitivity}%"
         binding.layoutSwipeSensitivity.visibility = if (panelPrefs.gesturesEnabled) View.VISIBLE else View.GONE
         
-        binding.tvTapGesturesValue.text = "Tap: ${actionLabel(panelPrefs.tapAction)}, 2x: ${actionLabel(panelPrefs.doubleTapAction)}, 3x: ${actionLabel(panelPrefs.tripleTapAction)}"
+        binding.tvTapGesturesValue.text = "Tap: ${actionLabel(panelPrefs.tapAction)}, 2x: ${actionLabel(panelPrefs.doubleTapAction)}, 3x: ${actionLabel(panelPrefs.tripleTapAction)}, Hold: ${actionLabel(panelPrefs.longPressAction)}"
         binding.featureHaptic.isChecked = panelPrefs.hapticEnabled
         binding.featureSlideBrightness.isChecked = panelPrefs.slideBrightnessEnabled
         binding.featureSlideVolume.isChecked = panelPrefs.slideVolumeEnabled
@@ -282,7 +282,7 @@ class InteractionSettingsActivity : AppCompatActivity() {
         }
 
         binding.layoutTapGestures.setOnClickListener {
-            val mainOptions = arrayOf("Single Tap Action", "Double Tap Action", "Triple Tap Action")
+            val mainOptions = arrayOf("Single Tap Action", "Double Tap Action", "Triple Tap Action", "Long Press Action")
             com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
                 .setTitle("Tap Gestures")
                 .setItems(mainOptions) { _, which ->
@@ -290,6 +290,7 @@ class InteractionSettingsActivity : AppCompatActivity() {
                         0 -> showActionPicker("Single Tap", panelPrefs.tapAction) { panelPrefs.tapAction = it }
                         1 -> showActionPicker("Double Tap", panelPrefs.doubleTapAction) { panelPrefs.doubleTapAction = it }
                         2 -> showActionPicker("Triple Tap", panelPrefs.tripleTapAction) { panelPrefs.tripleTapAction = it }
+                        3 -> showActionPicker("Long Press", panelPrefs.longPressAction) { panelPrefs.longPressAction = it }
                     }
                 }
                 .setNegativeButton("Close", null)

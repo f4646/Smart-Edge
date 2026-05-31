@@ -86,6 +86,7 @@ class PanelPreferences(context: Context) {
         private const val KEY_TAP_ACTION = "tap_action"
         private const val KEY_DOUBLE_TAP_ACTION = "double_tap_action"
         private const val KEY_TRIPLE_TAP_ACTION = "triple_tap_action"
+        private const val KEY_LONG_PRESS_ACTION = "long_press_action"
         
         private const val DELIMITER = ","
 
@@ -369,6 +370,7 @@ class PanelPreferences(context: Context) {
             remove(KEY_TAP_ACTION)
             remove(KEY_DOUBLE_TAP_ACTION)
             remove(KEY_TRIPLE_TAP_ACTION)
+            remove(KEY_LONG_PRESS_ACTION)
             putString(KEY_ICON_PACK, DEFAULT_ICON_PACK)
             putString(KEY_ICON_PACK_LABEL, "System Default")
             putInt(KEY_BLUR_AMOUNT, DEFAULT_BLUR_AMOUNT)
@@ -537,6 +539,10 @@ class PanelPreferences(context: Context) {
     var tripleTapAction: Int
         get() = prefs.getInt(KEY_TRIPLE_TAP_ACTION, ACTION_NONE)
         set(value) = prefs.edit { putInt(KEY_TRIPLE_TAP_ACTION, value) }
+
+    var longPressAction: Int
+        get() = prefs.getInt(KEY_LONG_PRESS_ACTION, ACTION_NONE)
+        set(value) = prefs.edit { putInt(KEY_LONG_PRESS_ACTION, value) }
 
     var gesturesEnabled: Boolean
         get() = prefs.getBoolean(KEY_GESTURES_ENABLED, DEFAULT_GESTURES)

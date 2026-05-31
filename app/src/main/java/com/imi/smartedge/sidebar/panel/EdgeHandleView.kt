@@ -70,12 +70,14 @@ class EdgeHandleView @JvmOverloads constructor(
     private var dragStartWindowY = 0f    // WindowManager params.y at drag start
     private var dragStartRawX = 0f
 
-    /** Long-press runnable: enters drag-repositioning mode */
-    private val dragModeRunnable = Runnable {
-        isDragMode = true
-        vibrateHaptic(40)
-        // Grow the pill slightly to signal drag mode
-        animate().scaleX(1.15f).scaleY(1.15f).setDuration(120).start()
+    /** Long-press runnable: performs action */
+    private val longPressRunnable = Runnable {
+        if (panelPrefs.longPressAction != PanelPreferences.ACTION_NONE) {
+            performAction(panelPrefs.longPressAction)
+            isTriggered = true
+            vibrateHaptic(40)
+            animate().scaleX(1f).scaleY(1f).setDuration(150).start()
+        }
     }
 
     private val holdRunnable = Runnable {
@@ -363,7 +365,7 @@ class EdgeHandleView @JvmOverloads constructor(
                 isDragMode = false
 
                 // Schedule long-press → drag mode
-                handler.postDelayed(dragModeRunnable, ViewConfiguration.getLongPressTimeout().toLong())
+                handler.postDelayed(longPressRunnable, ViewConfiguration.getLongPressTimeout().toLong())
 
                 if (showPill && panelPrefs.gesturesEnabled) {
                     animate().scaleX(0.85f).scaleY(0.95f).setDuration(100).start()
@@ -429,7 +431,7 @@ class EdgeHandleView @JvmOverloads constructor(
                         
                         isSlidingSeek = true
                         accumulatedDy = 0f 
-                        handler.removeCallbacks(dragModeRunnable)
+                        handler.removeCallbacks(longPressRunnable)
                         handler.removeCallbacks(holdRunnable)
                         vibrateHaptic(10)
                     }
@@ -474,15 +476,15 @@ class EdgeHandleView @JvmOverloads constructor(
                 }
 
                 if (dx > triggerThreshold) {
-                    handler.removeCallbacks(dragModeRunnable)
+                    handler.removeCallbacks(longPressRunnable)
                 }
                 if (!hasPassedThreshold && Math.abs(totalDy) > triggerThreshold && Math.abs(totalDy) > Math.abs(event.rawX - startX) * 1.5f) {
-                    handler.removeCallbacks(dragModeRunnable)
+                    handler.removeCallbacks(longPressRunnable)
                 }
 
                 if (!hasPassedThreshold && dx > effectiveThreshold) {
                     hasPassedThreshold = true
-                    handler.removeCallbacks(dragModeRunnable)
+                    handler.removeCallbacks(longPressRunnable)
                     
                     val effectiveHoldTime = if (isGameActive && panelPrefs.deliberateGestureInGames) {
                         holdDurationMs * 2 
@@ -508,7 +510,7 @@ class EdgeHandleView @JvmOverloads constructor(
 
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                 handler.removeCallbacks(holdRunnable)
-                handler.removeCallbacks(dragModeRunnable)
+                handler.removeCallbacks(longPressRunnable)
 
                 if (isDragMode) {
                     saveFinalPosition()

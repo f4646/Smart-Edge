@@ -61,6 +61,9 @@
 
                     <com.google.android.material.materialswitch.MaterialSwitch android:id="@+id/feature_gestures" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Edge Swipe Gestures" android:textColor="?attr/colorOnSurface" />
                     
+                    <com.google.android.material.materialswitch.MaterialSwitch android:id="@+id/feature_only_on_home" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/only_on_home" android:textColor="?attr/colorOnSurface" android:layout_marginTop="8dp" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/only_on_home_desc" android:textColor="?attr/colorOnSurfaceVariant" android:textSize="11sp" />
+
                     <LinearLayout 
                         android:id="@+id/layout_swipe_sensitivity"
                         android:layout_width="match_parent" 
@@ -114,6 +117,55 @@
                     <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/colorOutlineVariant" android:layout_marginVertical="16dp" />
 
                     <com.google.android.material.materialswitch.MaterialSwitch android:id="@+id/feature_haptic" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Haptic Feedback" android:textColor="?attr/colorOnSurface" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- SECTION: Notch Gestures -->
+            <TextView
+                style="@style/App_SectionTitle"
+                android:text="@string/notch_gestures" />
+
+            <com.google.android.material.card.MaterialCardView
+                style="@style/App_Card_Section"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    style="@style/App_CardContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <com.google.android.material.materialswitch.MaterialSwitch android:id="@+id/feature_notch_gestures" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/enable_notch_gestures" android:textColor="?attr/colorOnSurface" />
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/notch_gestures_desc" android:textColor="?attr/colorOnSurfaceVariant" android:textSize="11sp" />
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="?attr/colorOutlineVariant" android:layout_marginVertical="16dp" />
+
+                    <LinearLayout
+                        android:id="@+id/layoutNotchTapGestures"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:background="?attr/selectableItemBackground"
+                        android:paddingVertical="12dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/notch_tap_gestures"
+                            android:textColor="?attr/colorOnSurface"
+                            android:textSize="16sp" />
+
+                        <TextView
+                            android:id="@+id/tvNotchTapGesturesValue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Disabled"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:textSize="14sp" />
+                    </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

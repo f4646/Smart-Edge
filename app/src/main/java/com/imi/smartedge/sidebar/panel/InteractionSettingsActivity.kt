@@ -81,12 +81,18 @@ class InteractionSettingsActivity : AppCompatActivity() {
 
         binding.featureAutoStart.isChecked = panelPrefs.autoStart
         binding.featureGestures.isChecked = panelPrefs.gesturesEnabled
+        binding.featureOnlyOnHome.isChecked = panelPrefs.onlyOnHome
         binding.featureAutomationGestures.isChecked = panelPrefs.useAutomationForGestures
         binding.sbSwipeSensitivity.value = panelPrefs.swipeSensitivity.toFloat()
         binding.tvSwipeSensitivityValue.text = "${panelPrefs.swipeSensitivity}%"
         binding.layoutSwipeSensitivity.visibility = if (panelPrefs.gesturesEnabled) View.VISIBLE else View.GONE
         
         binding.tvTapGesturesValue.text = "Tap: ${actionLabel(panelPrefs.tapAction)}, 2x: ${actionLabel(panelPrefs.doubleTapAction)}, 3x: ${actionLabel(panelPrefs.tripleTapAction)}, Hold: ${actionLabel(panelPrefs.longPressAction)}"
+        
+        binding.featureNotchGestures.isChecked = panelPrefs.notchGesturesEnabled
+        binding.tvNotchTapGesturesValue.text = "Tap: ${actionLabel(panelPrefs.notchTapAction)}, 2x: ${actionLabel(panelPrefs.notchDoubleTapAction)}, 3x: ${actionLabel(panelPrefs.notchTripleTapAction)}, Hold: ${actionLabel(panelPrefs.notchLongPressAction)}"
+        binding.layoutNotchTapGestures.visibility = if (panelPrefs.notchGesturesEnabled) View.VISIBLE else View.GONE
+
         binding.featureHaptic.isChecked = panelPrefs.hapticEnabled
         binding.featureSlideBrightness.isChecked = panelPrefs.slideBrightnessEnabled
         binding.featureSlideVolume.isChecked = panelPrefs.slideVolumeEnabled
@@ -227,6 +233,11 @@ class InteractionSettingsActivity : AppCompatActivity() {
             applyOnly()
         }
 
+        binding.featureOnlyOnHome.setOnCheckedChangeListener { _, isChecked ->
+            panelPrefs.onlyOnHome = isChecked
+            applyOnly()
+        }
+
         binding.featureAutomationGestures.setOnCheckedChangeListener { buttonView, isChecked ->
             if (isChecked && !AutomationManager.isAutomationPossible()) {
                 // Try to auto-detect root first
@@ -291,6 +302,28 @@ class InteractionSettingsActivity : AppCompatActivity() {
                         1 -> showActionPicker("Double Tap", panelPrefs.doubleTapAction) { panelPrefs.doubleTapAction = it }
                         2 -> showActionPicker("Triple Tap", panelPrefs.tripleTapAction) { panelPrefs.tripleTapAction = it }
                         3 -> showActionPicker("Long Press", panelPrefs.longPressAction) { panelPrefs.longPressAction = it }
+                    }
+                }
+                .setNegativeButton("Close", null)
+                .show()
+        }
+
+        binding.featureNotchGestures.setOnCheckedChangeListener { _, isChecked ->
+            panelPrefs.notchGesturesEnabled = isChecked
+            binding.layoutNotchTapGestures.visibility = if (isChecked) View.VISIBLE else View.GONE
+            applyAndShow() // Recreate service to add/remove notch handle
+        }
+
+        binding.layoutNotchTapGestures.setOnClickListener {
+            val mainOptions = arrayOf("Single Tap Action", "Double Tap Action", "Triple Tap Action", "Long Press Action")
+            com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                .setTitle("Notch Tap Gestures")
+                .setItems(mainOptions) { _, which ->
+                    when (which) {
+                        0 -> showActionPicker("Notch Single Tap", panelPrefs.notchTapAction) { panelPrefs.notchTapAction = it }
+                        1 -> showActionPicker("Notch Double Tap", panelPrefs.notchDoubleTapAction) { panelPrefs.notchDoubleTapAction = it }
+                        2 -> showActionPicker("Notch Triple Tap", panelPrefs.notchTripleTapAction) { panelPrefs.notchTripleTapAction = it }
+                        3 -> showActionPicker("Notch Long Press", panelPrefs.notchLongPressAction) { panelPrefs.notchLongPressAction = it }
                     }
                 }
                 .setNegativeButton("Close", null)
@@ -669,6 +702,77 @@ class InteractionSettingsActivity : AppCompatActivity() {
         }
     }
 
+    private fun showAppSinglePicker(title: String, onSelect: (String) -> Unit) {
+        lifecycleScope.launch(Dispatchers.Main) {
+            val loadingDialog = com.google.android.material.dialog.MaterialAlertDialogBuilder(this@InteractionSettingsActivity)
+                .setTitle("Loading Apps...")
+                .setMessage("Please wait...")
+                .setCancelable(false)
+                .show()
+
+            val allApps = withContext(Dispatchers.IO) { AppRepository(this@InteractionSettingsActivity).getAllApps() }
+            loadingDialog.dismiss()
+
+            val sortedApps = allApps.sortedBy { it.appName.lowercase() }
+            
+            val density = resources.displayMetrics.density
+            val container = android.widget.LinearLayout(this@InteractionSettingsActivity).apply {
+                orientation = android.widget.LinearLayout.VERTICAL
+                setPadding((20 * density).toInt(), (10 * density).toInt(), (20 * density).toInt(), 0)
+            }
+
+            val searchBar = com.google.android.material.textfield.TextInputEditText(this@InteractionSettingsActivity).apply {
+                hint = "Search apps..."
+                setSingleLine()
+            }
+            container.addView(com.google.android.material.textfield.TextInputLayout(this@InteractionSettingsActivity).apply {
+                boxBackgroundMode = com.google.android.material.textfield.TextInputLayout.BOX_BACKGROUND_OUTLINE
+                setBoxCornerRadii(12 * density, 12 * density, 12 * density, 12 * density)
+                addView(searchBar)
+            })
+
+            val listView = android.widget.ListView(this@InteractionSettingsActivity).apply {
+                layoutParams = android.widget.LinearLayout.LayoutParams(
+                    android.widget.LinearLayout.LayoutParams.MATCH_PARENT,
+                    (400 * density).toInt()
+                )
+            }
+            container.addView(listView)
+
+            var displayApps = sortedApps
+            fun updateList(query: String) {
+                displayApps = if (query.isEmpty()) sortedApps
+                else sortedApps.filter { it.appName.contains(query, ignoreCase = true) }
+                
+                listView.adapter = android.widget.ArrayAdapter(
+                    this@InteractionSettingsActivity,
+                    android.R.layout.simple_list_item_1,
+                    displayApps.map { it.appName }.toTypedArray()
+                )
+            }
+            updateList("")
+
+            val dialog = com.google.android.material.dialog.MaterialAlertDialogBuilder(this@InteractionSettingsActivity)
+                .setTitle(title)
+                .setView(container)
+                .setNegativeButton("Cancel", null)
+                .show()
+
+            listView.setOnItemClickListener { _, _, position, _ ->
+                onSelect(displayApps[position].packageName)
+                dialog.dismiss()
+            }
+
+            searchBar.addTextChangedListener(object : android.text.TextWatcher {
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                    updateList(s.toString())
+                }
+                override fun afterTextChanged(s: android.text.Editable?) {}
+            })
+        }
+    }
+
     private fun applyOnly() {
         val intent = Intent(this, FloatingPanelService::class.java).apply {
             action = FloatingPanelService.ACTION_REFRESH
@@ -708,7 +812,11 @@ class InteractionSettingsActivity : AppCompatActivity() {
             "Show Notifications",
             "Show Quick Settings",
             "Lock Screen",
-            "Power Menu"
+            "Power Menu",
+            getString(R.string.action_flashlight),
+            getString(R.string.action_camera),
+            getString(R.string.action_rotation),
+            getString(R.string.action_fav_app)
         )
         val values = intArrayOf(
             PanelPreferences.ACTION_NONE,
@@ -721,17 +829,32 @@ class InteractionSettingsActivity : AppCompatActivity() {
             PanelPreferences.ACTION_NOTIFICATIONS,
             PanelPreferences.ACTION_QUICK_SETTINGS,
             PanelPreferences.ACTION_LOCK_SCREEN,
-            PanelPreferences.ACTION_POWER_MENU
+            PanelPreferences.ACTION_POWER_MENU,
+            PanelPreferences.ACTION_FLASHLIGHT,
+            PanelPreferences.ACTION_CAMERA,
+            PanelPreferences.ACTION_AUTO_ROTATION,
+            PanelPreferences.ACTION_OPEN_FAVORITE_APP
         )
         val selectedIndex = values.indexOf(current).coerceAtLeast(0)
 
         com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
             .setTitle(title)
             .setSingleChoiceItems(options, selectedIndex) { dialog, which ->
-                onSelect(values[which])
-                loadCurrentSettings() // Refresh summary
-                applyOnly()
-                dialog.dismiss()
+                val selectedAction = values[which]
+                if (selectedAction == PanelPreferences.ACTION_OPEN_FAVORITE_APP) {
+                    dialog.dismiss()
+                    showAppSinglePicker("Select Favorite App") { pkg ->
+                        panelPrefs.favoriteAppPackage = pkg
+                        onSelect(selectedAction)
+                        loadCurrentSettings()
+                        applyOnly()
+                    }
+                } else {
+                    onSelect(selectedAction)
+                    loadCurrentSettings() // Refresh summary
+                    applyOnly()
+                    dialog.dismiss()
+                }
             }
             .setNegativeButton("Cancel", null)
             .show()
@@ -748,6 +871,10 @@ class InteractionSettingsActivity : AppCompatActivity() {
         PanelPreferences.ACTION_QUICK_SETTINGS -> "Quick Settings"
         PanelPreferences.ACTION_LOCK_SCREEN -> "Lock Screen"
         PanelPreferences.ACTION_POWER_MENU -> "Power Menu"
+        PanelPreferences.ACTION_FLASHLIGHT -> getString(R.string.action_flashlight)
+        PanelPreferences.ACTION_CAMERA -> getString(R.string.action_camera)
+        PanelPreferences.ACTION_AUTO_ROTATION -> "Rotation"
+        PanelPreferences.ACTION_OPEN_FAVORITE_APP -> "Fav: ${panelPrefs.favoriteAppPackage.substringAfterLast(".").take(10)}"
         else -> "Off"
     }
 }

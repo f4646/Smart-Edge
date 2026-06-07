@@ -1,0 +1,42 @@
+<resources>
+    <string name="app_name">Smart Edge</string>
+    <string name="app_picker_title">Elegir Aplicaciones</string>
+    <string name="settings_title">Ajustes de SidePanel</string>
+    <string name="shortcut_toggle_short">Barra lateral</string>
+    <string name="shortcut_toggle_long">Alternar Barra Lateral</string>
+    <string name="shortcut_screenshot">Captura de pantalla</string>
+    <string name="shortcut_hub">Abrir Centro de Productividad</string>
+    <string name="panel_running">Smart Edge está activo</string>
+    <string name="panel_notification_channel">Servicio Smart Edge</string>
+    <string name="panel_notification_desc">Mantiene la barra lateral disponible sobre todas las apps</string>
+    <string name="start_panel">Iniciar Panel</string>
+    <string name="stop_panel">Detener Panel</string>
+    <string name="add_apps">Administrar Apps</string>
+    <string name="settings">Ajustes</string>
+    <string name="grant_permission">Conceder Permiso de Superposición</string>
+    <string name="permission_rationale">Para mostrar el panel sobre otras aplicaciones, por favor conceda el permiso "Mostrar sobre otras aplicaciones".</string>
+    <string name="remove_from_panel">Quitar del Panel</string>
+    <string name="add_to_panel">Añadido al Panel</string>
+    <string name="search_apps">Buscar aplicaciones…</string>
+    <string name="panel_side_label">Lado del Panel</string>
+    <string name="panel_side_right">Derecha</string>
+    <string name="panel_side_left">Izquierda</string>
+    <string name="auto_start_label">Inicio automático al arrancar</string>
+    <string name="done">Listo</string>
+    <string name="open">Abrir</string>
+    <string name="no_apps">Aún no hay aplicaciones.\nToca \"Administrar Apps\" para añadir algunas.</string>
+    <string name="panel_tip">Mantén presionado el borde derecho para abrir el panel</string>
+    <string name="accessibility_service_description">Detecta gestos de navegación del sistema para cerrar automáticamente el panel flotante sin esfuerzo.</string>
+
+    <string name="only_on_home">Mostrar solo en el inicio</string>
+    <string name="only_on_home_desc">Ocultar el tirador y los gestos cuando no estés en la pantalla de inicio/lanzador</string>
+    <string name="notch_gestures">Gestos en el Notch</string>
+    <string name="enable_notch_gestures">Activar Gestos en el Notch</string>
+    <string name="notch_gestures_desc">Añadir gestos táctiles al área del notch/agujero de la cámara</string>
+    <string name="notch_tap_gestures">Gestos Táctiles en el Notch</string>
+    
+    <string name="action_flashlight">Linterna</string>
+    <string name="action_camera">Cámara</string>
+    <string name="action_rotation">Alternar Rotación Automática</string>
+    <string name="action_fav_app">Abrir App Favorita</string>
+</resources>

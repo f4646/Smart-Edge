@@ -127,7 +127,19 @@ class EdgeHandleView @JvmOverloads constructor(
             PanelPreferences.ACTION_QUICK_SETTINGS -> triggerAccessibilityAction(PanelAccessibilityService.ACTION_QUICK_SETTINGS)
             PanelPreferences.ACTION_LOCK_SCREEN -> triggerAccessibilityAction(PanelAccessibilityService.ACTION_LOCK_SCREEN)
             PanelPreferences.ACTION_POWER_MENU -> triggerAccessibilityAction(PanelAccessibilityService.ACTION_SHOW_POWER_MENU)
+            PanelPreferences.ACTION_FLASHLIGHT -> triggerServiceAction(FloatingPanelService.ACTION_TOGGLE_FLASHLIGHT)
+            PanelPreferences.ACTION_CAMERA -> triggerServiceAction(FloatingPanelService.ACTION_LAUNCH_CAMERA)
+            PanelPreferences.ACTION_AUTO_ROTATION -> triggerServiceAction(FloatingPanelService.ACTION_TOGGLE_ROTATION)
+            PanelPreferences.ACTION_OPEN_FAVORITE_APP -> triggerServiceAction(FloatingPanelService.ACTION_OPEN_FAV_APP)
         }
+    }
+
+    private fun triggerServiceAction(action: String) {
+        vibrateHaptic()
+        val intent = Intent(context, FloatingPanelService::class.java).apply {
+            this.action = action
+        }
+        context.startService(intent)
     }
 
     private fun triggerAccessibilityAction(action: String) {

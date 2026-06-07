@@ -82,6 +82,13 @@ class PanelPreferences(context: Context) {
         private const val KEY_SLIDE_SENSITIVITY = "slide_sensitivity"
         private const val KEY_SWIPE_SENSITIVITY = "swipe_sensitivity"
         private const val KEY_USE_AUTOMATION_FOR_GESTURES = "use_automation_for_gestures"
+        private const val KEY_ONLY_ON_HOME = "only_on_home"
+        private const val KEY_FAVORITE_APP = "favorite_app_package"
+        private const val KEY_NOTCH_GESTURES_ENABLED = "notch_gestures_enabled"
+        private const val KEY_NOTCH_TAP_ACTION = "notch_tap_action"
+        private const val KEY_NOTCH_DOUBLE_TAP_ACTION = "notch_double_tap_action"
+        private const val KEY_NOTCH_TRIPLE_TAP_ACTION = "notch_triple_tap_action"
+        private const val KEY_NOTCH_LONG_PRESS_ACTION = "notch_long_press_action"
 
         private const val KEY_TAP_ACTION = "tap_action"
         private const val KEY_DOUBLE_TAP_ACTION = "double_tap_action"
@@ -101,6 +108,10 @@ class PanelPreferences(context: Context) {
         const val ACTION_QUICK_SETTINGS = 8
         const val ACTION_LOCK_SCREEN = 9
         const val ACTION_POWER_MENU = 10
+        const val ACTION_FLASHLIGHT = 11
+        const val ACTION_CAMERA = 12
+        const val ACTION_AUTO_ROTATION = 13
+        const val ACTION_OPEN_FAVORITE_APP = 14
 
         const val ANIM_TYPE_SLIDE = "slide"
         const val ANIM_TYPE_POPUP = "popup"
@@ -659,6 +670,34 @@ class PanelPreferences(context: Context) {
     var useAutomationForGestures: Boolean
         get() = prefs.getBoolean(KEY_USE_AUTOMATION_FOR_GESTURES, false)
         set(value) = prefs.edit { putBoolean(KEY_USE_AUTOMATION_FOR_GESTURES, value) }
+
+    var onlyOnHome: Boolean
+        get() = prefs.getBoolean(KEY_ONLY_ON_HOME, false)
+        set(value) = prefs.edit { putBoolean(KEY_ONLY_ON_HOME, value) }
+
+    var favoriteAppPackage: String
+        get() = prefs.getString(KEY_FAVORITE_APP, "") ?: ""
+        set(value) = prefs.edit { putString(KEY_FAVORITE_APP, value) }
+
+    var notchGesturesEnabled: Boolean
+        get() = prefs.getBoolean(KEY_NOTCH_GESTURES_ENABLED, false)
+        set(value) = prefs.edit { putBoolean(KEY_NOTCH_GESTURES_ENABLED, value) }
+
+    var notchTapAction: Int
+        get() = prefs.getInt(KEY_NOTCH_TAP_ACTION, ACTION_NONE)
+        set(value) = prefs.edit { putInt(KEY_NOTCH_TAP_ACTION, value) }
+
+    var notchDoubleTapAction: Int
+        get() = prefs.getInt(KEY_NOTCH_DOUBLE_TAP_ACTION, ACTION_NONE)
+        set(value) = prefs.edit { putInt(KEY_NOTCH_DOUBLE_TAP_ACTION, value) }
+
+    var notchTripleTapAction: Int
+        get() = prefs.getInt(KEY_NOTCH_TRIPLE_TAP_ACTION, ACTION_NONE)
+        set(value) = prefs.edit { putInt(KEY_NOTCH_TRIPLE_TAP_ACTION, value) }
+
+    var notchLongPressAction: Int
+        get() = prefs.getInt(KEY_NOTCH_LONG_PRESS_ACTION, ACTION_NONE)
+        set(value) = prefs.edit { putInt(KEY_NOTCH_LONG_PRESS_ACTION, value) }
 
     var serviceEnabled: Boolean
         get() = prefs.getBoolean("service_enabled", true)

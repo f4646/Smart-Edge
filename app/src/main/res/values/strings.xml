@@ -27,4 +27,16 @@
     <string name="no_apps">No apps added yet.\nTap \"Manage Apps\" to add some.</string>
     <string name="panel_tip">Long press the right edge to open the panel</string>
     <string name="accessibility_service_description">Detects system navigation gestures to effortlessly auto-close the floating panel.</string>
+
+    <string name="only_on_home">Show Only on Home Screen</string>
+    <string name="only_on_home_desc">Hide the handle and gestures when not on the home screen/launcher</string>
+    <string name="notch_gestures">Notch Gestures</string>
+    <string name="enable_notch_gestures">Enable Notch Gestures</string>
+    <string name="notch_gestures_desc">Add tap gestures to the camera notch/hole-punch area</string>
+    <string name="notch_tap_gestures">Notch Tap Gestures</string>
+    
+    <string name="action_flashlight">Flashlight</string>
+    <string name="action_camera">Camera</string>
+    <string name="action_rotation">Toggle Auto-Rotation</string>
+    <string name="action_fav_app">Open Favorite App</string>
 </resources>

@@ -28,11 +28,21 @@ class FloatingPanelService : Service() {
 
     private lateinit var windowManager: WindowManager
     private var edgeHandleView: EdgeHandleView? = null
+    private var notchHandleView: NotchHandleView? = null
     private var sidePanelView: SidePanelView? = null
     private var pickerPanelView: AppPickerPanelView? = null
     
     private var rootLayout: android.widget.FrameLayout? = null
     private var rootParams: WindowManager.LayoutParams? = null
+
+    private var isFlashlightOn = false
+    private var cameraManager: android.hardware.camera2.CameraManager? = null
+    private val torchCallback = object : android.hardware.camera2.CameraManager.TorchCallback() {
+        override fun onTorchModeChanged(cameraId: String, enabled: Boolean) {
+            super.onTorchModeChanged(cameraId, enabled)
+            isFlashlightOn = enabled
+        }
+    }
     
     private var dragOverlay: android.widget.FrameLayout? = null
     private var dragOverlayParams: WindowManager.LayoutParams? = null
@@ -104,6 +114,10 @@ class FloatingPanelService : Service() {
         const val ACTION_TOGGLE = "com.imi.smartedge.sidebar.panel.TOGGLE"
         const val ACTION_SCREENSHOT = "com.imi.smartedge.sidebar.panel.SCREENSHOT"
         const val ACTION_UPDATE_IMMERSIVE = "com.imi.smartedge.sidebar.panel.UPDATE_IMMERSIVE"
+        const val ACTION_TOGGLE_FLASHLIGHT = "com.imi.smartedge.sidebar.panel.TOGGLE_FLASHLIGHT"
+        const val ACTION_LAUNCH_CAMERA = "com.imi.smartedge.sidebar.panel.LAUNCH_CAMERA"
+        const val ACTION_TOGGLE_ROTATION = "com.imi.smartedge.sidebar.panel.TOGGLE_ROTATION"
+        const val ACTION_OPEN_FAV_APP = "com.imi.smartedge.sidebar.panel.OPEN_FAV_APP"
     }
 
     override fun onCreate() {
@@ -115,6 +129,13 @@ class FloatingPanelService : Service() {
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         panelPrefs = PanelPreferences(this)
         
+        try {
+            cameraManager = getSystemService(Context.CAMERA_SERVICE) as android.hardware.camera2.CameraManager
+            cameraManager?.registerTorchCallback(torchCallback, handler)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to register torch callback", e)
+        }
+
         // One-time migration for new defaults
         if (!panelPrefs.toolsFolderMigrated) {
             panelPrefs.showTools = true
@@ -134,6 +155,7 @@ class FloatingPanelService : Service() {
         
         if (panelPrefs.serviceEnabled) {
             addEdgeHandle()
+            addNotchHandle()
         }
 
         val filter = android.content.IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)
@@ -195,6 +217,7 @@ class FloatingPanelService : Service() {
                 
                 if (newState) {
                     addEdgeHandle()
+                    addNotchHandle()
                 } else {
                     stopSelf()
                 }
@@ -218,11 +241,23 @@ class FloatingPanelService : Service() {
                         panelPrefs.setPanelApps(topApps)
                     }
                     val isLandscape = resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
-                    if (isLandscape && !panelPrefs.showInLandscape) {
+                    val shouldShowHandle = if (isLandscape && !panelPrefs.showInLandscape) false
+                                          else if (panelPrefs.onlyOnHome && !isCurrentPackageLauncher()) false
+                                          else true
+
+                    if (!shouldShowHandle) {
                         edgeHandleView?.visibility = View.GONE
+                        // Also remove it from WM to be sure it doesn't block touches
+                        removeView(edgeHandleView)
+                        edgeHandleView = null
+                        
+                        // Also hide notch handle if onlyOnHome is active and not on home
+                        notchHandleView?.visibility = View.GONE
                     } else {
                         addEdgeHandle(forceRecreate = false)
+                        addNotchHandle()
                         edgeHandleView?.visibility = if (isPanelOpen) View.GONE else View.VISIBLE
+                        notchHandleView?.visibility = if (isPanelOpen) View.GONE else View.VISIBLE
                     }
 
                     // Update game mode state
@@ -256,8 +291,14 @@ class FloatingPanelService : Service() {
             }
             ACTION_SHOW_TEMP -> {
                 addEdgeHandle(forceRecreate = false)
+                addNotchHandle()
                 edgeHandleView?.showTemporarily()
-            }        }
+            }
+            ACTION_TOGGLE_FLASHLIGHT -> toggleFlashlight()
+            ACTION_LAUNCH_CAMERA -> launchCamera()
+            ACTION_TOGGLE_ROTATION -> toggleAutoRotation()
+            ACTION_OPEN_FAV_APP -> openFavoriteApp()
+        }
         return if (panelPrefs.serviceEnabled) START_STICKY else START_NOT_STICKY
     }
 
@@ -271,9 +312,82 @@ class FloatingPanelService : Service() {
         }, 300)
     }
 
+    private fun toggleFlashlight() {
+        try {
+            val manager = cameraManager ?: getSystemService(Context.CAMERA_SERVICE) as android.hardware.camera2.CameraManager
+            val cameraId = manager.cameraIdList.firstOrNull { id ->
+                val chars = manager.getCameraCharacteristics(id)
+                chars.get(android.hardware.camera2.CameraCharacteristics.FLASH_INFO_AVAILABLE) == true
+            } ?: return
+            
+            val newState = !isFlashlightOn
+            manager.setTorchMode(cameraId, newState)
+            showIndicator(if (newState) "Flashlight ON" else "Flashlight OFF")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to toggle flashlight", e)
+        }
+    }
+
+    private fun launchCamera() {
+        try {
+            val intent = Intent(android.provider.MediaStore.INTENT_ACTION_STILL_IMAGE_CAMERA).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            startActivity(intent)
+            closePanel(immediate = true)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to launch camera", e)
+        }
+    }
+
+    private fun toggleAutoRotation() {
+        try {
+            if (!android.provider.Settings.System.canWrite(this)) {
+                showIndicator("Requires Write Settings Permission")
+                val intent = Intent(android.provider.Settings.ACTION_MANAGE_WRITE_SETTINGS).apply {
+                    data = android.net.Uri.parse("package:$packageName")
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                startActivity(intent)
+                return
+            }
+            
+            val current = android.provider.Settings.System.getInt(contentResolver, android.provider.Settings.System.ACCELEROMETER_ROTATION, 0)
+            val newState = if (current == 1) 0 else 1
+            android.provider.Settings.System.putInt(contentResolver, android.provider.Settings.System.ACCELEROMETER_ROTATION, newState)
+            showIndicator(if (newState == 1) "Auto-Rotation ON" else "Auto-Rotation OFF")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to toggle rotation", e)
+        }
+    }
+
+    private fun openFavoriteApp() {
+        val pkg = panelPrefs.favoriteAppPackage
+        if (pkg.isEmpty()) {
+            showIndicator("Favorite app not set")
+            return
+        }
+        try {
+            val intent = packageManager.getLaunchIntentForPackage(pkg)
+            if (intent != null) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                startActivity(intent)
+                closePanel(immediate = true)
+            } else {
+                showIndicator("App not found")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to open favorite app", e)
+        }
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         isRunning = false
+        try {
+            cameraManager?.unregisterTorchCallback(torchCallback)
+        } catch (e: Exception) {}
+        
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             TileService.requestListeningState(this, android.content.ComponentName(this, PanelTileService::class.java))
         }
@@ -284,6 +398,7 @@ class FloatingPanelService : Service() {
             unregisterReceiver(packageReceiver)
         } catch (e: Exception) {}
         removeView(edgeHandleView)
+        removeView(notchHandleView)
         removeView(rootLayout)
     }
 
@@ -324,13 +439,65 @@ class FloatingPanelService : Service() {
         }
     }
 
+    private fun isCurrentPackageLauncher(): Boolean {
+        val currentPkg = panelPrefs.currentForegroundPackage
+        if (currentPkg.isEmpty() || currentPkg == packageName) return true // Assume home if unknown or if in our own app
+
+        val intent = Intent(Intent.ACTION_MAIN).apply {
+            addCategory(Intent.CATEGORY_HOME)
+        }
+        val resolveInfo = packageManager.resolveActivity(intent, android.content.pm.PackageManager.MATCH_DEFAULT_ONLY)
+        val homePkg = resolveInfo?.activityInfo?.packageName
+        
+        // Also check all installed launchers as some devices have multiple or third-party ones
+        val allLaunchers = packageManager.queryIntentActivities(intent, android.content.pm.PackageManager.MATCH_DEFAULT_ONLY)
+            .map { it.activityInfo.packageName }
+        
+        return currentPkg == homePkg || allLaunchers.contains(currentPkg) || currentPkg == "com.android.systemui"
+    }
+
+    private fun addNotchHandle() {
+        if (!panelPrefs.notchGesturesEnabled) {
+            removeView(notchHandleView)
+            notchHandleView = null
+            return
+        }
+
+        if (notchHandleView != null) return
+
+        notchHandleView = NotchHandleView(this)
+
+        val params = WindowManager.LayoutParams(
+            dpToPx(60), // Width around notch
+            dpToPx(40), // Height around notch
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+                    WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR or
+                    WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
+            PixelFormat.TRANSLUCENT
+        ).apply {
+            gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+            }
+        }
+
+        try {
+            windowManager.addView(notchHandleView, params)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to add notch handle", e)
+        }
+    }
+
     private fun addEdgeHandle(forceRecreate: Boolean = false) {
         val anyTriggerEnabled = panelPrefs.gesturesEnabled || 
                                 panelPrefs.tapToOpen || 
                                 panelPrefs.doubleTapToOpen || 
                                 panelPrefs.tripleTapToOpen
 
-        if (!anyTriggerEnabled) {
+        if (!anyTriggerEnabled || (panelPrefs.onlyOnHome && !isCurrentPackageLauncher())) {
             removeView(edgeHandleView)
             edgeHandleView = null
             return

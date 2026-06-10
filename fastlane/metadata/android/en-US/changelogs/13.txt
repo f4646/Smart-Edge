@@ -1,0 +1,10 @@
+- feat: Restored 'Move Handle' drag feature and set it as default long-press action.
+- feat: Restored independent pill color customization with a modern color picker.
+- feat: Added Spanish localization and a new in-app language selector.
+- feat: Added Notch Gestures for camera cutout interaction.
+- feat: Added 'Only on Home Screen' mode to hide sidebar inside apps.
+- feat: Added new dashboard tools: Camera, Flashlight, and Auto-Rotation.
+- fix: Significant stability improvements for handle dragging and coordinate mapping.
+- fix: Resolved flashlight toggle desync and edge side switching glitches.
+- fix: Improved IME (keyboard) interaction to prevent handle drift during drag.
+- fix: Harmonized UI across settings and miscellaneous sections.

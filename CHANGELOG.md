@@ -6,7 +6,21 @@
 
 ---
 
-### v1.3.5 (Latest)
+### v1.3.5.1 (Latest)
+- **feat(handle)**: Restored 'Move Handle' drag feature and set it as the default long-press action.
+- **feat(ui)**: Restored independent pill color customization with a modern color picker and reset option.
+- **feat(localization)**: Added Spanish localization and a new in-app language selector in Miscellaneous settings.
+- **feat(gestures)**: Added Notch Gestures for camera cutout interaction (Tap, 2x, 3x, Hold).
+- **feat(sidebar)**: Added 'Only on Home Screen' mode to hide sidebar/handle inside other apps.
+- **feat(tools)**: Added new dashboard tools: Camera, Flashlight (with system sync), and Auto-Rotation.
+- **fix(handle)**: Significant stability improvements for handle dragging with absolute-to-relative coordinate mapping.
+- **fix(ui)**: Resolved handle drift and "slow sliding" issues by silencing system animations during drag.
+- **fix(tools)**: Resolved flashlight toggle desync and edge side switching glitches.
+- **fix(ui)**: Harmonized UI across settings, miscellaneous sections, and improved overall visual consistency.
+
+---
+
+### v1.3.5
 - **feat(gestures)**: Added 'Long Press' gesture support to the edge handle. You can now configure a specific action (like Go to Home) for a long press.
 - **feat(animation)**: Restored 'Slide' as a selectable animation style and made it the default for a smoother entry.
 - **fix(animation)**: Resolved issue where the main sidebar would always slide even if 'Popup' was selected.

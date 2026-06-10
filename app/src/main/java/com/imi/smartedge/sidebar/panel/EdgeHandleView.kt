@@ -75,6 +75,8 @@ class EdgeHandleView @JvmOverloads constructor(
     private var dragStartRawY = 0f
     private var dragStartWindowY = 0f    // WindowManager params.y at drag start
     private var dragStartRawX = 0f
+    private var lastMoveRawY = 0f
+    private var lastMoveRawX = 0f
 
     /** Long-press runnable: performs action */
     private val longPressRunnable = Runnable {
@@ -147,6 +149,14 @@ class EdgeHandleView @JvmOverloads constructor(
     private fun enterDragMode() {
         isDragMode = true
         vibrateHaptic(40)
+        
+        val params = layoutParams as? WindowManager.LayoutParams
+        if (params != null) {
+            dragStartWindowY = params.y.toFloat()
+            dragStartRawY = lastMoveRawY
+            dragStartRawX = lastMoveRawX
+        }
+        
         // Grow the pill slightly to signal drag mode
         animate().scaleX(1.2f).scaleY(1.2f).setDuration(150).start()
     }
@@ -243,6 +253,8 @@ class EdgeHandleView @JvmOverloads constructor(
 
     private fun setupImeListener() {
         androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(this) { _, insets ->
+            if (isDragMode) return@setOnApplyWindowInsetsListener insets
+            
             val imeVisible = insets.isVisible(androidx.core.view.WindowInsetsCompat.Type.ime())
             val imeHeight = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.ime()).bottom
             
@@ -382,6 +394,8 @@ class EdgeHandleView @JvmOverloads constructor(
             MotionEvent.ACTION_DOWN -> {
                 startX = event.rawX
                 startY = event.rawY
+                lastMoveRawX = event.rawX
+                lastMoveRawY = event.rawY
                 lastSlideY = event.rawY
                 accumulatedDy = 0f
                 isSlidingSeek = false
@@ -393,14 +407,14 @@ class EdgeHandleView @JvmOverloads constructor(
                 isTriggered = false
                 isDragMode = false
 
-                // Schedule long-press → drag mode
+                // Schedule long-press → perform action
                 handler.postDelayed(longPressRunnable, ViewConfiguration.getLongPressTimeout().toLong())
 
                 if (showPill && panelPrefs.gesturesEnabled) {
                     animate().scaleX(0.85f).scaleY(0.95f).setDuration(100).start()
                 }
 
-                // Record current window Y for drag baseline
+                // Record current window Y for drag baseline (fallback)
                 val params = layoutParams as? WindowManager.LayoutParams
                 dragStartWindowY = params?.y?.toFloat() ?: 0f
 
@@ -408,6 +422,8 @@ class EdgeHandleView @JvmOverloads constructor(
             }
 
             MotionEvent.ACTION_MOVE -> {
+                lastMoveRawX = event.rawX
+                lastMoveRawY = event.rawY
                 val totalDy = event.rawY - dragStartRawY
                 val currentY = event.rawY
                 val dySinceLast = currentY - lastSlideY
@@ -419,9 +435,13 @@ class EdgeHandleView @JvmOverloads constructor(
                     if (params != null) {
                         val screenH = resources.displayMetrics.heightPixels
                         val safeMargin = (10 * density).toInt()
-                        val maxOffset = (screenH / 2) - (height / 2) - safeMargin
-
-                        val newY = (dragStartWindowY + totalDy).toInt().coerceIn(-maxOffset, maxOffset)
+                        
+                        // Relative movement: NewPos = StartPos + (CurrentFinger - StartFinger)
+                        val dy = event.rawY - dragStartRawY
+                        val maxOffset = (screenH / 2f) - (height / 2f) - safeMargin
+                        
+                        val newY = (dragStartWindowY + dy).toInt()
+                            .coerceIn(-maxOffset.toInt(), maxOffset.toInt())
                         
                         if (params.y != newY) {
                             params.y = newY
@@ -431,13 +451,16 @@ class EdgeHandleView @JvmOverloads constructor(
 
                     // Flip side based on absolute screen position
                     val screenW = resources.displayMetrics.widthPixels
-                    val leftThreshold = screenW * 0.3f
-                    val rightThreshold = screenW * 0.7f
+                    val leftThreshold = screenW * 0.35f
+                    val rightThreshold = screenW * 0.65f
                     
                     if (isRightSide && event.rawX < leftThreshold) {
                         flipSide(PanelPreferences.SIDE_LEFT)
+                        // Reset drag start X when flipping to prevent immediate flip back
+                        dragStartRawX = event.rawX 
                     } else if (!isRightSide && event.rawX > rightThreshold) {
                         flipSide(PanelPreferences.SIDE_RIGHT)
+                        dragStartRawX = event.rawX
                     }
                     return true
                 }
@@ -449,6 +472,7 @@ class EdgeHandleView @JvmOverloads constructor(
                     val absDyFromStart = Math.abs(currentY - startY)
 
                     if (!isSlidingSeek && absDyFromStart > triggerThreshold / 2 && absDyFromStart > absDx * 2) {
+                        // Volume/Brightness takes priority OVER the open-panel gesture
                         val volumeOn = panelPrefs.slideVolumeEnabled
                         val brightnessOn = panelPrefs.slideBrightnessEnabled
                         
@@ -504,10 +528,15 @@ class EdgeHandleView @JvmOverloads constructor(
                     scaledThreshold
                 }
 
-                if (dx > triggerThreshold) {
+                // Tolerance for horizontal movement before cancelling long-press
+                // We double it to allow for more natural finger roll/wobble when trying to move handle
+                if (dx > triggerThreshold * 2.5f) {
                     handler.removeCallbacks(longPressRunnable)
                 }
-                if (!hasPassedThreshold && Math.abs(totalDy) > triggerThreshold && Math.abs(totalDy) > Math.abs(event.rawX - startX) * 1.5f) {
+                
+                // Tolerance for vertical movement before cancelling long-press
+                // Very generous vertical tolerance (4x) so users can start moving without cancellation
+                if (!hasPassedThreshold && Math.abs(totalDy) > triggerThreshold * 4f && Math.abs(totalDy) > Math.abs(event.rawX - startX) * 2f) {
                     handler.removeCallbacks(longPressRunnable)
                 }
 
@@ -584,6 +613,15 @@ class EdgeHandleView @JvmOverloads constructor(
                         else Gravity.START or Gravity.CENTER_VERTICAL
 
         updateLayoutSafely(params)
+        
+        // If we are dragging, re-snapshot coordinates because the gravity change
+        // might have shifted the relative center of the Y axis on some devices.
+        if (isDragMode) {
+            dragStartWindowY = params.y.toFloat()
+            dragStartRawY = lastMoveRawY
+            dragStartRawX = lastMoveRawX
+        }
+
         updatePill()
     }
 

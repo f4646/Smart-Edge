@@ -598,18 +598,8 @@ class FloatingPanelService : Service() {
                 adjustVolume(delta)
             }
             onSideChanged = { newSide ->
-                // Pill was dragged to the opposite edge — sync the whole service
-                val sideIsRight = newSide == PanelPreferences.SIDE_RIGHT
+                // Pill was dragged to the opposite edge — sync the whole service UI
                 sidePanelView?.updateSideLayout()
-                // Re-anchor the handle gravity in case the WM needs it
-                val handleParams = edgeHandleView?.layoutParams as? WindowManager.LayoutParams
-                if (handleParams != null) {
-                    handleParams.gravity = if (sideIsRight) Gravity.END or Gravity.CENTER_VERTICAL
-                                           else Gravity.START or Gravity.CENTER_VERTICAL
-                    if (edgeHandleView?.isAttachedToWindow == true) {
-                        try { windowManager.updateViewLayout(edgeHandleView, handleParams) } catch (e: Exception) {}
-                    }
-                }
             }
             isRightSide = isRight
             showPill = isPillVisible

@@ -560,17 +560,29 @@ class FloatingPanelService : Service() {
         val isPillVisible = panelPrefs.showPill
 
         if (edgeHandleView != null && !forceRecreate) {
-            // Update gravity if side changed without recreating the whole view
             val params = edgeHandleView?.layoutParams as? WindowManager.LayoutParams
             if (params != null) {
+                // 1. Update gravity if side changed
                 val newGravity = if (isRight) Gravity.END or Gravity.CENTER_VERTICAL
                                  else Gravity.START or Gravity.CENTER_VERTICAL
-                if (params.gravity != newGravity) {
-                    params.gravity = newGravity
-                    try {
-                        windowManager.updateViewLayout(edgeHandleView, params)
-                    } catch (e: Exception) {}
-                }
+                params.gravity = newGravity
+
+                // 2. Update size and position
+                val density = resources.displayMetrics.density
+                val screenH = resources.displayMetrics.heightPixels
+                val safeMargin = (10 * density).toInt()
+                val h = if (isPillVisible) (panelPrefs.handleHeight * density).toInt()
+                        else (screenH * 0.60f).toInt()
+                val maxOffset = (screenH / 2) - (h / 2) - safeMargin
+                val requestedOffset = (panelPrefs.handleVerticalOffset * density).toInt()
+
+                params.width = (panelPrefs.handleWidth * density).toInt()
+                params.height = h
+                params.y = requestedOffset.coerceIn(-maxOffset, maxOffset)
+                
+                try {
+                    windowManager.updateViewLayout(edgeHandleView, params)
+                } catch (e: Exception) {}
             }
             
             edgeHandleView?.updateState(

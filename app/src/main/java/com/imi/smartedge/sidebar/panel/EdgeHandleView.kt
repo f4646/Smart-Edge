@@ -312,16 +312,13 @@ class EdgeHandleView @JvmOverloads constructor(
     }
 
     fun updateState(isRight: Boolean, isPill: Boolean, immersive: Boolean, opacity: Int) {
-        val changed = isRightSide != isRight || showPill != isPill || isImmersiveMode != immersive
         isRightSide = isRight
         showPill = isPill
         isImmersiveMode = immersive
         if (!isTempHighAlpha) {
             alpha = opacity / 100f
         }
-        if (changed) {
-            updatePill()
-        }
+        updatePill()
     }
 
     fun updatePill() {

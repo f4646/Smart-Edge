@@ -44,8 +44,9 @@ class HandleSettingsActivity : AppCompatActivity() {
         binding.sbHandleHeight.value = panelPrefs.handleHeight.toFloat()
         binding.tvHeightValue.text = "${panelPrefs.handleHeight}dp"
         
-        binding.sbHandlePos.value = panelPrefs.handleVerticalOffset.toFloat()
-        binding.tvPosValue.text = "${panelPrefs.handleVerticalOffset}dp"
+        val offset = panelPrefs.handleVerticalOffset.toFloat().coerceIn(-500f, 500f)
+        binding.sbHandlePos.value = offset
+        binding.tvPosValue.text = "${offset.toInt()}dp"
     }
 
     private fun updatePillColorUI() {
@@ -99,7 +100,7 @@ class HandleSettingsActivity : AppCompatActivity() {
         })
 
         binding.btnResetThickness.setOnClickListener {
-            val default = 2
+            val default = PanelPreferences.DEFAULT_PILL_WIDTH
             panelPrefs.pillWidth = default
             binding.sbPillThickness.value = default.toFloat()
             binding.tvThicknessValue.text = "${default}dp"
@@ -118,7 +119,7 @@ class HandleSettingsActivity : AppCompatActivity() {
         })
 
         binding.btnResetWidth.setOnClickListener {
-            val default = 15
+            val default = PanelPreferences.DEFAULT_HANDLE_WIDTH
             panelPrefs.handleWidth = default
             binding.sbTriggerWidth.value = default.toFloat()
             binding.tvWidthValue.text = "${default}dp"
@@ -137,7 +138,7 @@ class HandleSettingsActivity : AppCompatActivity() {
         })
 
         binding.btnResetHeight.setOnClickListener {
-            val default = 150
+            val default = PanelPreferences.DEFAULT_HANDLE_HEIGHT
             panelPrefs.handleHeight = default
             binding.sbHandleHeight.value = default.toFloat()
             binding.tvHeightValue.text = "${default}dp"

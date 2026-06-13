@@ -354,13 +354,17 @@ class PanelAppsAdapter(
 
     @android.annotation.SuppressLint("BlockedPrivateApi")
     private fun launchFreeform(intent: Intent) {
-        intent.addFlags(android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
+        intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
+        // Add intent extras that some OEMs/ROMs respect for freeform launching
+        intent.putExtra("android.intent.extra.WINDOWING_MODE", 5)
+        intent.putExtra("android.intent.extra.LAUNCH_WINDOWING_MODE", 5)
+        
         try {
-            val options = android.app.ActivityOptions.makeCustomAnimation(context, android.R.anim.fade_in, 0)
+            val options = android.app.ActivityOptions.makeBasic()
             val displayMetrics = context.resources.displayMetrics
             val w = displayMetrics.widthPixels
             val h = displayMetrics.heightPixels
-            val prefersLandscape = detectLandscapeOrientation(intent.`package`)
+            val prefersLandscape = detectLandscapeOrientation(intent.`package`, intent)
 
             val bounds: Rect = when (panelPrefs.freeformWindowMode) {
                 PanelPreferences.FREEFORM_MODE_PORTRAIT -> {
@@ -418,10 +422,10 @@ class PanelAppsAdapter(
         }
     }
 
-    private fun detectLandscapeOrientation(packageName: String?): Boolean {
-        if (packageName == null) return false
+    private fun detectLandscapeOrientation(packageName: String?, intent: Intent? = null): Boolean {
+        val pkg = packageName ?: intent?.`package` ?: intent?.component?.packageName ?: return false
         return try {
-            val launchIntent = context.packageManager.getLaunchIntentForPackage(packageName)
+            val launchIntent = context.packageManager.getLaunchIntentForPackage(pkg)
             val component = launchIntent?.component ?: return false
             val activityInfo = context.packageManager.getActivityInfo(component, android.content.pm.PackageManager.GET_META_DATA)
             when (activityInfo.screenOrientation) {

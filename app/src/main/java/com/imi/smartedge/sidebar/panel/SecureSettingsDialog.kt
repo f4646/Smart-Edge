@@ -24,10 +24,38 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 class SecureSettingsDialog : BottomSheetDialogFragment() {
 
     private var onPermissionGranted: (() -> Unit)? = null
+    private lateinit var tvStatus: TextView
+    private lateinit var tvAutoStatus: TextView
+
+    private val shizukuListener = rikka.shizuku.Shizuku.OnRequestPermissionResultListener { requestCode, grantResult ->
+        if (requestCode == 1001 && grantResult == PackageManager.PERMISSION_GRANTED) {
+            try {
+                val packageName = requireContext().packageName
+                val sh = "pm grant $packageName android.permission.WRITE_SECURE_SETTINGS"
+                val process = rikka.shizuku.Shizuku.newProcess(arrayOf("sh", "-c", sh), null, null)
+                process.waitFor()
+            } catch (e: Exception) {}
+            activity?.runOnUiThread { refreshUI() }
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        try {
+            rikka.shizuku.Shizuku.addRequestPermissionResultListener(shizukuListener)
+        } catch (e: Exception) {}
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        try {
+            rikka.shizuku.Shizuku.removeRequestPermissionResultListener(shizukuListener)
+        } catch (e: Exception) {}
+    }
 
     companion object {
         const val TAG = "SecureSettingsDialog"
-        
+
         fun show(context: Context, onPermissionGranted: () -> Unit) {
             val dialog = SecureSettingsDialog()
             dialog.onPermissionGranted = onPermissionGranted
@@ -83,7 +111,7 @@ class SecureSettingsDialog : BottomSheetDialogFragment() {
 
         val iconBg = FrameLayout(ctx).apply {
             val size = (48 * density).toInt()
-            layoutParams = LinearLayout.LayoutParams(size, size).apply { marginEnd = (16 * density).toInt() }
+            layoutParams = LinearLayout.LayoutParams(size, size).apply { marginEnd = (16 * density).toInt() }   
             background = GradientDrawable().apply {
                 shape = GradientDrawable.RECTANGLE
                 cornerRadius = 14 * density
@@ -109,8 +137,9 @@ class SecureSettingsDialog : BottomSheetDialogFragment() {
             setTextColor(Color.WHITE)
             typeface = Typeface.DEFAULT_BOLD
         }
+        
         val isGranted = ctx.checkSelfPermission(Manifest.permission.WRITE_SECURE_SETTINGS) == PackageManager.PERMISSION_GRANTED
-        val tvStatus = TextView(ctx).apply {
+        tvStatus = TextView(ctx).apply {
             text = if (isGranted) "Permission: Granted" else "Permission: Missing"
             textSize = 12f
             setTextColor(if (isGranted) Color.parseColor("#00FF00") else Color.parseColor("#99FFFFFF"))
@@ -120,7 +149,7 @@ class SecureSettingsDialog : BottomSheetDialogFragment() {
         titleCol.addView(tvStatus)
 
         // Add Automation Status
-        val tvAutoStatus = TextView(ctx).apply {
+        tvAutoStatus = TextView(ctx).apply {
             val autoStatus = when {
                 AutomationManager.isRootAvailable() -> "Engine: Root Active"
                 AutomationManager.isShizukuAvailable() -> "Engine: Shizuku Active"
@@ -128,7 +157,9 @@ class SecureSettingsDialog : BottomSheetDialogFragment() {
             }
             text = autoStatus
             textSize = 11f
-            setTextColor(Color.parseColor("#B3FFFFFF"))
+            val isAutoActive = AutomationManager.isAutomationPossible()
+            setTextColor(if (isAutoActive) Color.parseColor("#00FF00") else Color.parseColor("#B3FFFFFF"))      
+            if (isAutoActive) typeface = Typeface.DEFAULT_BOLD
             setPadding(0, (2 * density).toInt(), 0, 0)
         }
         titleCol.addView(tvAutoStatus)
@@ -159,11 +190,11 @@ class SecureSettingsDialog : BottomSheetDialogFragment() {
             onGrant = {
                 try {
                     if (rikka.shizuku.Shizuku.pingBinder()) {
-                        if (rikka.shizuku.Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
+                        if (rikka.shizuku.Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) { 
                             val sh = "pm grant $packageName android.permission.WRITE_SECURE_SETTINGS"
-                            val process = rikka.shizuku.Shizuku.newProcess(arrayOf("sh", "-c", sh), null, null)
+                            val process = rikka.shizuku.Shizuku.newProcess(arrayOf("sh", "-c", sh), null, null) 
                             process.waitFor()
-                            refreshUI(ctx, tvStatus)
+                            refreshUI()
                         } else {
                             rikka.shizuku.Shizuku.requestPermission(1001)
                         }
@@ -173,11 +204,11 @@ class SecureSettingsDialog : BottomSheetDialogFragment() {
             onRevoke = {
                 try {
                     if (rikka.shizuku.Shizuku.pingBinder()) {
-                        if (rikka.shizuku.Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
+                        if (rikka.shizuku.Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) { 
                             val sh = "pm revoke $packageName android.permission.WRITE_SECURE_SETTINGS"
-                            val process = rikka.shizuku.Shizuku.newProcess(arrayOf("sh", "-c", sh), null, null)
+                            val process = rikka.shizuku.Shizuku.newProcess(arrayOf("sh", "-c", sh), null, null) 
                             process.waitFor()
-                            refreshUI(ctx, tvStatus)
+                            refreshUI()
                         }
                     }
                 } catch (e: Exception) {}
@@ -192,7 +223,7 @@ class SecureSettingsDialog : BottomSheetDialogFragment() {
                         try {
                             val p = Runtime.getRuntime().exec(arrayOf("su", "-c", "pm grant $packageName android.permission.WRITE_SECURE_SETTINGS"))
                             p.waitFor()
-                            activity?.runOnUiThread { refreshUI(ctx, tvStatus) }
+                            activity?.runOnUiThread { refreshUI() }
                         } catch (e: Exception) {}
                     }
                 }
@@ -201,7 +232,7 @@ class SecureSettingsDialog : BottomSheetDialogFragment() {
                 try {
                     val p = Runtime.getRuntime().exec(arrayOf("su", "-c", "pm revoke $packageName android.permission.WRITE_SECURE_SETTINGS"))
                     p.waitFor()
-                    activity?.runOnUiThread { refreshUI(ctx, tvStatus) }
+                    activity?.runOnUiThread { refreshUI() }
                 } catch (e: Exception) {}
             }
         ))
@@ -215,7 +246,7 @@ class SecureSettingsDialog : BottomSheetDialogFragment() {
                 LinearLayout.LayoutParams.WRAP_CONTENT
             ).apply { topMargin = (20 * density).toInt(); bottomMargin = (8 * density).toInt() }
         }
-        
+
         val adbTitle = TextView(ctx).apply {
             text = "MANUAL SETUP (ADB)"
             textSize = 11f
@@ -336,7 +367,7 @@ class SecureSettingsDialog : BottomSheetDialogFragment() {
                 setStroke((1 * density).toInt(), Color.parseColor("#FF5252"))
                 setColor(Color.TRANSPARENT)
             }
-            layoutParams = LinearLayout.LayoutParams((80 * density).toInt(), (38 * density).toInt()).apply {
+            layoutParams = LinearLayout.LayoutParams((80 * density).toInt(), (38 * density).toInt()).apply {    
                 marginEnd = (12 * density).toInt()
             }
             setOnClickListener { onRevoke() }
@@ -361,12 +392,29 @@ class SecureSettingsDialog : BottomSheetDialogFragment() {
         return row
     }
 
-    private fun refreshUI(ctx: Context, tvStatus: TextView) {
+    private fun refreshUI() {
+        if (!::tvStatus.isInitialized || !::tvAutoStatus.isInitialized) return
+        
+        val ctx = requireContext()
         val isGranted = ctx.checkSelfPermission(Manifest.permission.WRITE_SECURE_SETTINGS) == PackageManager.PERMISSION_GRANTED
-        tvStatus.text = if (isGranted) "Status: Active" else "Status: Inactive"
+        tvStatus.text = if (isGranted) "Permission: Granted" else "Permission: Missing"
         tvStatus.setTextColor(if (isGranted) Color.parseColor("#00FF00") else Color.parseColor("#99FFFFFF"))
-        if (isGranted) {
-            tvStatus.typeface = Typeface.DEFAULT_BOLD
+        tvStatus.typeface = if (isGranted) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
+        
+        val isAutomationPossible = AutomationManager.isAutomationPossible()
+        tvAutoStatus.text = if (isAutomationPossible) {
+            when {
+                AutomationManager.isRootAvailable() -> "Engine: Root Active"
+                AutomationManager.isShizukuAvailable() -> "Engine: Shizuku Active"
+                else -> "Engine: Active"
+            }
+        } else {
+            "Engine: Service Not Running"
+        }
+        tvAutoStatus.setTextColor(if (isAutomationPossible) Color.parseColor("#00FF00") else Color.parseColor("#B3FFFFFF"))
+        tvAutoStatus.typeface = if (isAutomationPossible) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
+        
+        if (isAutomationPossible) {
             onPermissionGranted?.invoke()
         }
     }
@@ -374,7 +422,7 @@ class SecureSettingsDialog : BottomSheetDialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): android.app.Dialog {
         val dialog = super.onCreateDialog(savedInstanceState) as BottomSheetDialog
         dialog.setOnShowListener {
-            val bottomSheet = dialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
+            val bottomSheet = dialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)   
             bottomSheet?.background = GradientDrawable().apply {
                 shape = GradientDrawable.RECTANGLE
                 val density = resources.displayMetrics.density

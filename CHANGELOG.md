@@ -6,7 +6,17 @@
 
 ---
 
-### v1.3.5.1 (Latest)
+### v1.3.6 (Latest)
+- **fix(ui)**: Resolved crash in Handle settings by expanding vertical offset range and safely clamping out-of-bounds positions.
+- **fix(multitasking)**: Fixed freeform window feature to correctly spawn floating windows with system caption bars and better orientation detection.
+- **fix(multitasking)**: Restored the missing Multitasking & Windowing settings section (Freeform and Split-screen toggles) to the dashboard.
+- **fix(ui)**: Fixed invisible pill graphic issue by using correct system defaults for reset actions and forcing synchronous redraws.
+- **feat(automation)**: Improved Native Gesture Engine dialog feedback to accurately and instantly reflect Root/Shizuku active connection states.
+- **fix(multitasking)**: Smoothed out freeform window launches by switching to native system transitions instead of custom fade animations.
+
+---
+
+### v1.3.5.1
 - **feat(handle)**: Restored 'Move Handle' drag feature and set it as the default long-press action.
 - **feat(ui)**: Restored independent pill color customization with a modern color picker and reset option.
 - **feat(localization)**: Added Spanish localization and a new in-app language selector in Miscellaneous settings.

@@ -314,11 +314,10 @@ fun Context.isFreeformEnabled(): Boolean {
     val freeformPref = android.provider.Settings.Global.getInt(contentResolver, "freeform_window_management", 0) != 0
     val freeformSupport = android.provider.Settings.Global.getInt(contentResolver, "enable_freeform_support", 0) != 0
     val forceResizable = android.provider.Settings.Global.getInt(contentResolver, "force_resizable_activities", 0) != 0
-    
-    val result = freeformPref && (freeformSupport || forceResizable)
-    return result
-    }
 
+    // Relaxed check: if any of the core freeform toggles are enabled.
+    return freeformPref || freeformSupport || forceResizable
+}
 /**
  * Attempts to open Developer Options and highlight the Freeform windows toggle.
  */

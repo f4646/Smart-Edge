@@ -7,6 +7,12 @@
 ---
 
 ### v1.3.6 (Latest)
+- **feat(interaction)**: Reorganized Interaction settings dashboard into logical, consolidated groups (Main Trigger, Specialized Interaction, Panel Experience, Multitasking, Shortcuts, Advanced, System).
+- **feat(interaction)**: Restored missing Panel Experience features (Landscape, Notification Apps, Scroll Memory, Keyboard) and System & Behavior features (Auto-start, Debug Logs, Animation Feel, Picker Gap).
+- **feat(shortcuts)**: Restored Desktop Shortcuts feature to pin a Toggle Sidebar shortcut.
+- **refactor(ui)**: Refactored InteractionSettingsActivity to fully utilize ViewBinding.
+- **refactor(core)**: Centralized action execution logic into a new ActionDispatcher class to unify Edge and Notch handle behaviors.
+- **fix(core)**: Added a mandatory engine check (Accessibility or Automation) in FloatingPanelService before displaying the handle.
 - **fix(ui)**: Resolved crash in Handle settings by expanding vertical offset range and safely clamping out-of-bounds positions.
 - **fix(multitasking)**: Fixed freeform window feature to correctly spawn floating windows with system caption bars and better orientation detection.
 - **fix(multitasking)**: Restored the missing Multitasking & Windowing settings section (Freeform and Split-screen toggles) to the dashboard.

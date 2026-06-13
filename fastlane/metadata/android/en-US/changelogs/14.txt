@@ -1,3 +1,8 @@
+- Reorganized Interaction settings into logical groups.
+- Restored missing Panel Experience and System features.
+- Restored Desktop Shortcuts to pin a Toggle Sidebar shortcut.
+- Centralized action logic to unify Edge and Notch handle behaviors.
+- Added a mandatory engine check (Accessibility or Automation) before displaying the handle.
 - fix(ui): Resolved crash in Handle settings by expanding vertical offset range and safely clamping out-of-bounds positions.
 - fix(multitasking): Fixed freeform window feature to correctly spawn floating windows with system caption bars and better orientation detection.
 - fix(multitasking): Restored the missing Multitasking & Windowing settings section (Freeform and Split-screen toggles) to the dashboard.

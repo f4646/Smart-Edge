@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Smart Edge</string>
+    <string name="app_picker_title">Uygulama Seç</string>
+    <string name="settings_title">Kenar Paneli Ayarları</string>
+    <string name="shortcut_toggle_short">Kenar Paneli</string>
+    <string name="shortcut_toggle_long">Kenar Panelini Aç/Kapat</string>
+    <string name="shortcut_screenshot">Ekran Görüntüsü Al</string>
+    <string name="shortcut_hub">Üretkenlik Merkezini Aç</string>
+    <string name="panel_running">Smart Edge etkin</string>
+    <string name="panel_notification_channel">Smart Edge Servisi</string>
+    <string name="panel_notification_desc">Kenar panelini tüm uygulamalar üzerinde erişilebilir tutar</string>
+    <string name="start_panel">Paneli Başlat</string>
+    <string name="stop_panel">Paneli Durdur</string>
+    <string name="add_apps">Uygulamaları Yönet</string>
+    <string name="settings">Ayarlar</string>
+    <string name="grant_permission">Katman İznini Ver</string>
+    <string name="permission_rationale">Paneli diğer uygulamaların üzerinde göstermek için lütfen "Diğer uygulamaların üzerinde görüntüle" iznini verin.</string>
+    <string name="remove_from_panel">Panelden Kaldır</string>
+    <string name="add_to_panel">Panele Eklendi</string>
+    <string name="search_apps">Uygulama ara...</string>
+    <string name="panel_side_label">Panel Tarafı</string>
+    <string name="panel_side_right">Sağ</string>
+    <string name="panel_side_left">Sol</string>
+    <string name="auto_start_label">Başlangıçta otomatik başlat</string>
+    <string name="done">Bitti</string>
+    <string name="open">Aç</string>
+    <string name="no_apps">Henüz uygulama eklenmedi.\nEklemek için "Uygulamaları Yönet"e dokunun.</string>
+    <string name="panel_tip">Paneli açmak için sağ kenara uzun basın</string>
+    <string name="accessibility_service_description">Yüzen paneli zahmetsizce otomatik kapatmak için sistem gezinti hareketlerini algılar.</string>
+
+    <string name="section_appearance">Görünüm</string>
+    <string name="section_interaction">Etkileşim</string>
+    <string name="section_handle">Tutamaç ve Gösterge</string>
+    <string name="section_icons_colors">Simgeler ve Renkler</string>
+    <string name="section_home_screen">Ana Ekran</string>
+    <string name="section_layout_tuning">Düzen Ayarları</string>
+    <string name="section_general">Genel</string>
+    <string name="section_advanced_options">Gelişmiş Seçenekler</string>
+
+    <string name="app_theme">Uygulama Teması</string>
+    <string name="theme_follow_system">Sistemi Takip Et</string>
+    <string name="ui_style_theme">Arayüz Stili Teması</string>
+    <string name="theme_origin">OriginOS (Yuvarlatılmış)</string>
+    <string name="theme_hyperos">HyperOS (Glass/Cam)</string>
+    <string name="theme_realme">Realme UI</string>
+    <string name="theme_rich">Rich UI (Parlak)</string>
+
+    <string name="blur_title">Cam Efektli Bulanıklık</string>
+    <string name="blur_desc">Düşük donanımlı cihazlarda kasma yapabilir (Sadece Android 12+)</string>
+    <string name="blur_intensity">Bulanıklık Yoğunluğu</string>
+    <string name="invisible_bg">Görünmez Arka Plan</string>
+    <string name="panel_columns">Panel Sütunları</string>
+    <string name="icon_shape">Simge Şekli</string>
+    <string name="icon_pack">Simge Paketi</string>
+    <string name="icon_pack_default">Sistem Varsayılanı</string>
+    <string name="icon_scale">Simge Boyutu</string>
+
+    <string name="custom_accent_title">Özel Vurgu Rengi Kullan</string>
+    <string name="accent_color">Vurgu Rengi</string>
+    <string name="panel_bg_color">Panel Arka Planı</string>
+    <string name="btn_reset_ui_colors">Arayüz Renklerini Sıfırla</string>
+
+    <string name="service_button_style">Servis Butonu Stili</string>
+    <string name="button_style_power">Modern Güç Simgesi</string>
+    <string name="button_style_logo">Klasik Logo</string>
+
+    <string name="panel_opacity">Panel Opaklığı</string>
+    <string name="corner_radius">Köşe Yuvarlatma</string>
+    <string name="sidebar_max_height">Kenar Paneli Maks Yüksekliği</string>
+    <string name="picker_max_height">Panel Düzenleme Maks Yüksekliği</string>
+
+    <string name="visible_pill">Görünür Gösterge</string>
+    <string name="visible_pill_desc">Ekran kenarında görsel bir belirteç gösterir</string>
+    <string name="pill_color">Gösterge Rengi</string>
+    <string name="pill_thickness">Gösterge Kalınlığı</string>
+    <string name="touch_area_width">Dokunma Alanı Genişliği</string>
+    <string name="handle_height">Tutamaç Yüksekliği</string>
+
+    <string name="edge_gestures">Kenar Kaydırma Hareketleri</string>
+    <string name="edge_sensitivity">Kenar Kaydırma Hassasiyeti</string>
+    <string name="req_accessibility">Erişilebilirlik Servisi Gerekli</string>
+    <string name="tap_gestures">Dokunma Hareketleri</string>
+    <string name="tap_gestures_desc">Tutamaça dokunma veya basılı tutma için eylemler ekleyin</string>
+    <string name="haptic_feedback">Dokunsal Geri Bildirim</string>
+
+    <string name="edge_seek_title">Kenar Kaydırma (Ayarlamak için kaydır)</string>
+    <string name="edge_seek_desc">Panel kapalıyken tutamaç üzerinde kaydırın</string>
+    <string name="slide_brightness">Parlaklığı Kaydır</string>
+    <string name="slide_volume">Sesi Kaydır</string>
+    <string name="seek_sensitivity">Kaydırma Hassasiyeti</string>
+
+    <string name="automation_title">Sistem Otomasyonu (Root/Shizuku)</string>
+    <string name="automation_desc">Geri, Ana Ekran ve Son Uygulamalar için sistem komutlarını kullanın</string>
+    <string name="fullscreen_protection">Tam Ekran Koruması</string>
+    <string name="fullscreen_desc">Seçili uygulamalarda hareketleri engelle</string>
+    <string name="game_mode">Oyun Modu</string>
+    <string name="game_mode_desc">Seçili uygulamalarda kontrollü kaydırma gerektir</string>
+
+    <string name="main_hero_subtitle">Akıcı Kontrol Merkezi</string>
+    <string name="main_service_title">Kenar Paneli Servisi</string>
+    <string name="main_service_stopped">Servis Durduruldu</string>
+    <string name="main_service_running">Servis Etkin</string>
+    <string name="main_test_sidebar">Kenar Panelini Şimdi Test Et</string>
+
+    <string name="alert_battery_title">Kararlılığı İyileştir</string>
+    <string name="alert_battery_desc">Sistemin arka planda uygulamayı kapatmasını önlemek için SidePanel\'i pil optimizasyonundan çıkarın.</string>
+    <string name="alert_battery_btn">Arka Planda Kullanıma İzin Ver</string>
+
+    <string name="alert_freeform_title">Çoklu Görev Modu</string>
+    <string name="alert_freeform_desc">Serbest Pencere Modu ayarlarda etkinleştirilmiş ancak sistem Geliştirici Seçeneklerinde devre dışı bırakılmış.</string>
+    <string name="alert_freeform_btn">Ayarlardan Düzelt</string>
+
+    <string name="alert_permission_title">İzin Gerekli</string>
+    <string name="alert_permission_desc">Kenar panelini kullanmak için lütfen \'Diğer uygulamaların üzerinde görüntüle\' iznine izin verin.</string>
+    <string name="alert_permission_btn">Şimdi Ver</string>
+
+    <string name="main_logs_title">Sistem Aktivite Kayıtları</string>
+    <string name="main_settings_btn">Gelişmiş Ayarlar</string>
+    <string name="main_how_to_use">Nasıl kullanılır</string>
+    <string name="main_tutorial_desc">Paneli ortaya çıkarmak için ekran kenarından kaydırın ve bir an bekleyin. Ayarlardan etkinleştirilmişse göstergeye de dokunabilirsiniz.</string>
+    <string name="main_sideload_note">İzin engellenirse: Ayarlar → Uygulamalar → Kısıtlanmış ayarlara izin ver</string>
+
+    <string name="only_on_home">Sadece Ana Ekranda Göster</string>
+    <string name="only_on_home_desc">Ana ekran/başlatıcıda değilken tutamacı ve hareketleri gizle</string>
+    <string name="notch_gestures">Çentik Hareketleri</string>
+    <string name="enable_notch_gestures">Çentik Hareketlerini Etkinleştir</string>
+    <string name="notch_gestures_desc">Kamera çentiği/delik alanına dokunma hareketleri ekle</string>
+    <string name="notch_tap_gestures">Çentik Dokunma Hareketleri</string>
+
+    <string name="action_flashlight">El Feneri</string>
+    <string name="action_camera">Kamera</string>
+    <string name="action_rotation">Otomatik Döndürmeyi Aç/Kapat</string>
+    <string name="action_fav_app">Favori Uygulamayı Aç</string>
+
+    <string name="indicator_flashlight_on">El Feneri AÇIK</string>
+    <string name="indicator_flashlight_off">El Feneri KAPALI</string>
+    <string name="indicator_rotation_on">Otomatik Döndürme AÇIK</string>
+    <string name="indicator_rotation_off">Otomatik Döndürme KAPALI</string>
+
+    <string name="status_service_active">Servis Etkin</string>
+    <string name="status_automation_stopped">Otomasyon Durduruldu</string>
+    <string name="apps_selected_singular">1 uygulama seçildi</string>
+    <string name="apps_selected_plural">\%d uygulama seçildi</string>
+
+    <string name="misc_section_general">Genel</string>
+    <string name="misc_app_language">Uygulama Dili</string>
+    <string name="misc_section_backup">Yedekle ve Geri Yükle</string>
+    <string name="misc_export_title">Ayarları Dışa Aktar</string>
+    <string name="misc_export_desc">Kurulumu dahili depolamaya kaydet</string>
+    <string name="misc_import_title">Ayarları İçe Aktar</string>
+    <string name="misc_import_desc">Önceki bir JSON yedeğinden geri yükle</string>
+
+    <string name="dialog_reset_title">Tüm Ayarları Sıfırla?</string>
+    <string name="dialog_reset_msg">Bu, tüm yapılandırmaları ve kenar paneli uygulamalarınızı orijinal varsayılanlarına döndürecektir.</string>
+    <string name="btn_reset">Sıfırla</string>
+    <string name="toast_reset_success">Ayarlar Başarıyla Sıfırlandı</string>
+    <string name="toast_browser_error">Tarayıcı açılamadı</string>
+
+    <string name="manage_apps_desc">Kenar çubuğunda hangi uygulamaların görüneceğini seçin</string>
+    <string name="view_repo_title">Depoyu Görüntüle</string>
+    <string name="view_repo_desc">Kaynak kodunu GitHub\'da kontrol et</string>
+    <string name="reset_defaults_desc">Tüm ayarları fabrika durumuna getir</string>
+
+    <string name="search_settings_hint">Ayarlarda ara...</string>
+    <string name="main_menu_appearance_desc">Karanlık modu ayarla, rengi ve ölçeği düzenle</string>
+    <string name="main_menu_interaction_desc">Hareketler, dokunsal geri bildirimler, yan seçim</string>
+    <string name="main_menu_handle_desc">Boyut ve konum ayarlaması</string>
+    <string name="section_tools">Araç Paneli</string>
+    <string name="main_menu_tools_desc">Araç panelini özelleştir</string>
+    <string name="section_misc">Çeşitli</string>
+    <string name="main_menu_misc_desc">Yedekle, geri yükle ve daha fazlası</string>
+
+    <string name="tap_gestures_summary">Dokunma: \%1$s, 2x: \%2$s, 3x: \%3$s, Basılı Tut: \%4$s</string>
+    <string name="apps_selected_none">0 uygulama seçildi</string>
+
+    <string name="freeform_mode_standard">Standart (\%80)</string>
+    <string name="freeform_mode_portrait">Dikey (Dar)</string>
+    <string name="freeform_mode_maximized">Tam Ekran</string>
+    <string name="freeform_mode_custom">Özel (\%1$d\%\% × \%2$d\%\%)</string>
+
+    <string name="anim_feel_calm">Sakin (Yavaş)</string>
+    <string name="anim_feel_balanced">Dengeli (Varsayılan)</string>
+    <string name="anim_feel_snappy">Hızlı</string>
+    <string name="anim_feel_instant">Anında</string>
+    <string name="anim_feel_disabled">Devre Dışı</string>
+
+    <string name="dialog_automation_title">Otomasyon Kullanılamıyor</string>
+    <string name="dialog_automation_msg">Bu özelliği kullanmak için Root veya Shizuku gereklidir. Lütfen önce \'Sistem Otomasyonu\'nu kurun.</string>
+    <string name="btn_setup">Kur</string>
+    <string name="loading_apps">Uygulamalar Yükleniyor...</string>
+    <string name="please_wait_apps">Uygulamalar yüklenirken lütfen bekleyin.</string>
+    <string name="hint_search_apps">Uygulama ara...</string>
+    <string name="btn_save">Kaydet</string>
+    <string name="dialog_window_size">Pencere Boyutu</string>
+    <string name="dialog_anim_feel">Animasyon Hissi</string>
+
+    <string name="picker_title_hide">Kenar Panelini Gizlemek İçin Uygulamaları Seç</string>
+    <string name="picker_title_game">Oyun Modu Uygulamalarını Seç</string>
+    <string name="picker_title_favorite">Favori Uygulamayı Seç</string>
+
+    <string name="toast_fav_app_unset">Favori uygulama ayarlanmadı</string>
+    <string name="toast_app_not_found">Uygulama bulunamadı</string>
+    <string name="toast_freeform_enabled">Sistem Serbest Pencere Modu Etkinleştirildi</string>
+    <string name="snackbar_freeform_disabled">Sistem serbest pencere modu Geliştirici Seçeneklerinde devre dışı</string>
+    <string name="btn_fix">DÜZELT</string>
+
+    <string name="toast_shortcut_sent">Kısayol isteği gönderildi. Lütfen ana ekranınızı kontrol edin.</string>
+    <string name="toast_launcher_no_shortcut">Başlatıcı, sabitlenmiş kısayolları desteklemiyor</string>
+    <string name="toast_shortcut_added">Kısayol ana ekrana eklendi</string>
+    <string name="label_toggle_sidebar">Kenar Panelini Aç/Kapat</string>
+
+    <string name="status_granted">İzin Verildi</string>
+    <string name="status_not_granted">İzin Verilmedi</string>
+    <string name="label_native_gesture">Yerel Hareket</string>
+
+    <string name="action_none">Devre Dışı</string>
+    <string name="action_launcher">Başlatıcı</string>
+    <string name="action_screenshot">Ekran Görüntüsü</string>
+    <string name="action_last_app">Son Uygulama</string>
+    <string name="action_back">Geri</string>
+    <string name="action_home">Ana Ekran</string>
+    <string name="action_recents">Son Uygulamalar</string>
+    <string name="action_notifications">Bildirimler</string>
+    <string name="action_quick_settings">Hızlı Ayarlar</string>
+    <string name="action_lock_screen">Ekranı Kilitle</string>
+    <string name="action_power_menu">Güç Menüsü</string>
+    <string name="action_move_handle">Tutamaçı Taşı (Sürükle)</string>
+
+    <string name="section_panel_experience">Panel Deneyimi</string>
+    <string name="feature_landscape_label">Paneli Yatay Modda Göster</string>
+    <string name="feature_landscape_desc">Kenar panelinin cihaz yatay moddayken açılmasına izin ver</string>
+    <string name="feature_notification_apps_label">Bildirim Uygulamaları Bölümü</string>
+    <string name="feature_notification_apps_desc">Son bildirimi olan uygulamaları üstte özel bir bölümde göster</string>
+    <string name="feature_remember_scroll_label">Kaydırma Konumunu Hatırla</string>
+    <string name="feature_remember_scroll_desc">Kenar çubuğunu veya seçiciyi tekrar açtığınızda son kaydırma konumunu geri yükle</string>
+    <string name="feature_auto_show_keyboard_label">Klavyeyi Otomatik Göster</string>
+    <string name="feature_auto_show_keyboard_desc">Uygulama seçiciyi açtığınızda arama çubuğuna otomatik odaklan ve klavyeyi göster</string>
+
+    <string name="section_system_behavior">Sistem ve Davranış</string>
+    <string name="feature_auto_start_label">Başlangıçta Otomatik Başlat</string>
+    <string name="feature_auto_start_desc">Cihaz yeniden başladıktan sonra kenar paneli servisini otomatik başlat</string>
+    <string name="feature_show_logs_label">Hata Ayıklama Günlüklerini Etkinleştir</string>
+    <string name="feature_show_logs_desc">Sorun giderme için panel içinde dahili işlem günlüklerini göster</string>
+
+    <string name="feature_anim_feel_label">Animasyon Hissi</string>
+    <string name="feature_picker_gap_label">Seçici Boşluğu (Aralık)</string>
+    <string name="feature_picker_gap_desc">Kenar çubuğu ile uygulama seçici paneli arasındaki yatay boşluk</string>
+
+    <string name="section_desktop_shortcuts">Masaüstü Kısayolları</string>
+    <string name="feature_add_shortcut_label">Aç/Kapat Kısayolu Ekle</string>
+    <string name="feature_add_shortcut_desc">Kenar panelini hızlıca açıp kapatmak için ana ekranınıza bir kısayol sabitleyin</string>
+</resources>

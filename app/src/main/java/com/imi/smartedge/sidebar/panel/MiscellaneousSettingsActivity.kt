@@ -72,18 +72,20 @@ class MiscellaneousSettingsActivity : AppCompatActivity() {
     }
 
     private fun showLanguagePicker() {
-        val languages = arrayOf("English", "Español")
-        val codes = arrayOf("en", "es")
+        // 1. Listelere Türkçe'yi ekle
+        val languages = arrayOf("English", "Español", "Türkçe")
+        val codes = arrayOf("en", "es", "tr") // 2. Dil kodunu ekle
+
         val currentIndex = codes.indexOf(panelPrefs.appLanguage).let { if (it == -1) 0 else it }
 
         com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
-            .setTitle("Choose App Language")
+            .setTitle("Choose App Language") // Burayı da "Dil Seçimi" yapabilirsin
             .setSingleChoiceItems(languages, currentIndex) { dialog, which ->
                 val selected = codes[which]
                 if (selected != panelPrefs.appLanguage) {
                     panelPrefs.appLanguage = selected
                     LocaleHelper.setLocale(this, selected)
-                    
+
                     // Restart app
                     val intent = Intent(this, MainActivity::class.java)
                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK

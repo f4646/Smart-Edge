@@ -29,7 +29,7 @@ class PanelAppsAdapter(
     var isEditMode: Boolean = false // Expose to SidePanelView for ItemTouchHelper
     private var currentColumns: Int = 1
     private var forceFreeform: Boolean = false
-    
+
     private var mutableApps = mutableListOf<AppInfo>()
     val currentList: List<AppInfo> get() = mutableApps
 
@@ -110,7 +110,7 @@ class PanelAppsAdapter(
             VIEW_TYPE_APP, VIEW_TYPE_FOLDER, VIEW_TYPE_TOOL -> {
                 val layoutId = if (panelPrefs.uiTheme == PanelPreferences.THEME_RICH)
                     R.layout.item_panel_app_rich else R.layout.item_panel_app
-                
+
                 val view = LayoutInflater.from(parent.context)
                     .inflate(layoutId, parent, false)
                 AppViewHolder(view)
@@ -136,12 +136,12 @@ class PanelAppsAdapter(
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val scale = context.getAutoScalingFactor() * panelPrefs.scaleFactor
         val isRich = panelPrefs.uiTheme == PanelPreferences.THEME_RICH
-        
+
         if (holder is AppViewHolder) {
             // Restore original sizes + scaling
             var baseIconSize = if (isRich) 44 else 40
             if (currentColumns == 2) baseIconSize = (baseIconSize * 1.1).toInt() // 10% larger in 2-col
-            
+
             val baseTextSize = if (isRich) 9f else 8f
 
             holder.ivIcon.layoutParams.let { lp ->
@@ -150,7 +150,7 @@ class PanelAppsAdapter(
                 holder.ivIcon.layoutParams = lp
             }
             holder.tvName.textSize = baseTextSize * scale
-            
+
             // Keep app labels white for the dark floating panel
             holder.tvName.setTextColor(android.graphics.Color.parseColor("#D9FFFFFF"))
 
@@ -163,7 +163,7 @@ class PanelAppsAdapter(
 
             // Fetch from mutableApps so it stays synchronous with rapid dragging
             val app = if (position < mutableApps.size) mutableApps[position] else return
-            
+
             if (app.type == AppInfo.Type.FOLDER || app.type == AppInfo.Type.TOOL || app.packageName.startsWith("smartedge.shortcut.")) {
                 Glide.with(context).clear(holder.ivIcon)
                 val iconRes = when {
@@ -178,7 +178,7 @@ class PanelAppsAdapter(
                     app.packageName == "smartedge.shortcut.reboot" -> android.R.drawable.ic_lock_power_off
                     else -> android.R.drawable.sym_def_app_icon
                 }
-                
+
                 // Specific adjustments for placeholders to look like volume
                 if (app.packageName.contains("volume")) {
                     holder.ivIcon.setImageResource(R.drawable.ic_plus) // Better placeholder for +
@@ -200,7 +200,7 @@ class PanelAppsAdapter(
                 holder.ivIcon.imageTintList = null
                 holder.ivIcon.background = null
                 holder.ivIcon.setPadding(0, 0, 0, 0)
-                
+
                 Glide.with(context)
                     .load(AppIconRequest(app.packageName, panelPrefs.appearanceKey))
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
@@ -208,10 +208,10 @@ class PanelAppsAdapter(
                     .error(android.R.drawable.sym_def_app_icon)
                     .override((120 * scale).toInt(), (120 * scale).toInt())
                     .into(holder.ivIcon)
-                    
+
                 IconShapeHelper.applyShape(holder.ivIcon, panelPrefs.iconShape)
             }
-                
+
             holder.tvName.text = app.appName
 
             if (app.identifier == highlightIdentifier) {
@@ -263,14 +263,14 @@ class PanelAppsAdapter(
                 if (launchIntent != null) {
                     launchIntent.addFlags(
                         android.content.Intent.FLAG_ACTIVITY_NEW_TASK or
-                        android.content.Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+                                android.content.Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
                     )
-                    
+
                     val shouldFreeform = forceFreeform || (panelPrefs.freeformEnabled && context.isFreeformEnabled())
-                    val isAccessibilityShortcut = app.type == AppInfo.Type.SHORTCUT && 
-                                               (app.packageName == "smartedge.shortcut.one_hand" || 
-                                                app.packageName == "smartedge.shortcut.reboot")
-                    
+                    val isAccessibilityShortcut = app.type == AppInfo.Type.SHORTCUT &&
+                            (app.packageName == "smartedge.shortcut.one_hand" ||
+                                    app.packageName == "smartedge.shortcut.reboot")
+
                     if (shouldFreeform && context.isFreeformEnabled() && app.type != AppInfo.Type.SHORTCUT) {
                         launchFreeform(launchIntent)
                     } else {
@@ -303,17 +303,17 @@ class PanelAppsAdapter(
                 if (panelPrefs.hapticEnabled) {
                     holder.itemView.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS)
                 }
-                
+
                 val clipData = android.content.ClipData.newPlainText("pkg", app.packageName)
                 val shadow = View.DragShadowBuilder(holder.ivIcon)
-                
+
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
                     holder.itemView.startDragAndDrop(clipData, shadow, app.packageName, 0)
                 } else {
                     @Suppress("DEPRECATION")
                     holder.itemView.startDrag(clipData, shadow, app.packageName, 0)
                 }
-                
+
                 true
             }
         } else if (holder is AddViewHolder) {
@@ -327,7 +327,7 @@ class PanelAppsAdapter(
             // Revert back to original dark-centric tints for the add button
             val bgTint = android.graphics.Color.parseColor("#4DFFFFFF")
             val iconTint = android.graphics.Color.WHITE
-            
+
             holder.ivAdd.backgroundTintList = android.content.res.ColorStateList.valueOf(bgTint)
             holder.ivAdd.imageTintList = android.content.res.ColorStateList.valueOf(iconTint)
 
@@ -341,7 +341,7 @@ class PanelAppsAdapter(
             holder.itemView.alpha = 1f
             holder.itemView.scaleX = 1f
             holder.itemView.scaleY = 1f
-            
+
             holder.itemView.setOnClickListener {
                 if (panelPrefs.hapticEnabled) {
                     holder.itemView.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
@@ -358,7 +358,7 @@ class PanelAppsAdapter(
         // Add intent extras that some OEMs/ROMs respect for freeform launching
         intent.putExtra("android.intent.extra.WINDOWING_MODE", 5)
         intent.putExtra("android.intent.extra.LAUNCH_WINDOWING_MODE", 5)
-        
+
         try {
             val options = android.app.ActivityOptions.makeBasic()
             val displayMetrics = context.resources.displayMetrics
@@ -398,22 +398,40 @@ class PanelAppsAdapter(
                     }
                 }
             }
-            options.launchBounds = bounds
+            options.launchBounds = null
             Log.d("PanelAppsAdapter", "Launching Freeform: pkg=${intent.`package`}, bounds=$bounds")
 
             // Use HiddenApiBypass instead of direct reflection to avoid F-Droid lint errors
+// --- SON ÇALIŞAN KARARLI HALE GERİ DÖNÜŞ ---
+            intent.sourceBounds = android.graphics.Rect(331, 179, 512, 360)
+            intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or
+                    android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK or
+                    android.content.Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS
+
+            val stableOptions = android.app.ActivityOptions.makeBasic()
             try {
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
                     org.lsposed.hiddenapibypass.HiddenApiBypass.invoke(
                         android.app.ActivityOptions::class.java,
-                        options,
+                        stableOptions,
                         "setLaunchWindowingMode",
-                        5
+                        102
                     )
-                    Log.d("PanelAppsAdapter", "HiddenApiBypass: setLaunchWindowingMode(5) success")
                 }
             } catch (e: Exception) {
-                Log.e("PanelAppsAdapter", "HiddenApiBypass fail: ${e.message}")
+                android.util.Log.e("PanelAppsAdapter", "HiddenApiBypass fail: ${e.message}")
+            }
+
+            val finalBundle = stableOptions.toBundle()
+            if (finalBundle != null && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                finalBundle.putInt("android.activity.windowingMode", 102)
+                finalBundle.putInt("android:activity.windowingMode", 102)
+            }
+
+            try {
+                context.startActivity(intent, finalBundle)
+            } catch (e: Exception) {
+                context.startActivity(intent)
             }
             context.startActivity(intent, options.toBundle())
             Log.d("PanelAppsAdapter", "startActivity called with options")

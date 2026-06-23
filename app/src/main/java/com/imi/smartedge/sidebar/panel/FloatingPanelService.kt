@@ -23,7 +23,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-
+// --- DOĞRU GLOBAL DEĞİŞKENLER BLOĞU ---
+private var globalContainer: android.widget.FrameLayout? = null
+private var globalIndicatorText: android.widget.TextView? = null // Sadece bu tek başına kalmalı!
+private var isIndicatorVisible = false
+private var indicatorRemoveRunnable: Runnable? = null
+private val indicatorHandler = android.os.Handler(android.os.Looper.getMainLooper())
 class FloatingPanelService : Service() {
 
     private lateinit var windowManager: WindowManager
@@ -31,7 +36,7 @@ class FloatingPanelService : Service() {
     private var notchHandleView: NotchHandleView? = null
     private var sidePanelView: SidePanelView? = null
     private var pickerPanelView: AppPickerPanelView? = null
-    
+
     private var rootLayout: android.widget.FrameLayout? = null
     private var rootParams: WindowManager.LayoutParams? = null
 
@@ -50,7 +55,7 @@ class FloatingPanelService : Service() {
             }
         }
     }
-    
+
     private var dragOverlay: android.widget.FrameLayout? = null
     private var dragOverlayParams: WindowManager.LayoutParams? = null
 
@@ -60,22 +65,22 @@ class FloatingPanelService : Service() {
     private var currentFolderId: String? = null
     private lateinit var panelPrefs: PanelPreferences
     private var lastPickerToggleTime = 0L
-    
+
     private val serviceScope = CoroutineScope(Dispatchers.Main + Job())
     private val handler = Handler(Looper.getMainLooper())
 
     private val packageReceiver = object : android.content.BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val action = intent?.action
-            if (action == Intent.ACTION_PACKAGE_ADDED || 
-                action == Intent.ACTION_PACKAGE_REMOVED || 
+            if (action == Intent.ACTION_PACKAGE_ADDED ||
+                action == Intent.ACTION_PACKAGE_REMOVED ||
                 action == Intent.ACTION_PACKAGE_REPLACED) {
-                
+
                 val packageName = intent.data?.schemeSpecificPart
                 if (packageName != null) {
                     // Invalidate system icon cache for this app
                     AppRepository.clearSystemIconCache(packageName)
-                    
+
                     // If it was removed, remove it from pinned apps too
                     if (action == Intent.ACTION_PACKAGE_REMOVED && !intent.getBooleanExtra(Intent.EXTRA_REPLACING, false)) {
                         panelPrefs.removeApp(packageName)
@@ -109,7 +114,7 @@ class FloatingPanelService : Service() {
         const val TAG = "FloatingPanelService"
         var isRunning = false
             private set
-            
+
         const val CHANNEL_ID = "side_panel_channel"
         const val NOTIFICATION_ID = 1001
         const val ACTION_STOP = "com.imi.smartedge.sidebar.panel.STOP"
@@ -135,7 +140,7 @@ class FloatingPanelService : Service() {
         }
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         panelPrefs = PanelPreferences(this)
-        
+
         try {
             cameraManager = getSystemService(Context.CAMERA_SERVICE) as android.hardware.camera2.CameraManager
             cameraManager?.registerTorchCallback(torchCallback, handler)
@@ -159,7 +164,7 @@ class FloatingPanelService : Service() {
 
         initSidePanel()
         initPickerPanel()
-        
+
         // Force enable notch gestures for debugging if we're in a debug build
         // val isDebug = (applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0
         // if (isDebug) {
@@ -204,7 +209,7 @@ class FloatingPanelService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val action = intent?.action
-        
+
         // If service is disabled, we only allow ACTION_TOGGLE or ACTION_STOP to proceed.
         // Any other action should stop the service.
         if (!panelPrefs.serviceEnabled && action != ACTION_TOGGLE && action != ACTION_STOP) {
@@ -217,17 +222,17 @@ class FloatingPanelService : Service() {
                 addEdgeHandle()
             }
         }
-        
+
         when (action) {
             ACTION_TOGGLE -> {
                 val newState = intent?.getBooleanExtra("target_state", !panelPrefs.serviceEnabled) ?: !panelPrefs.serviceEnabled
                 panelPrefs.setServiceEnabled(newState, commit = true)
-                
+
                 // Request Tile Update explicitly
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                     TileService.requestListeningState(this, android.content.ComponentName(this, PanelTileService::class.java))
                 }
-                
+
                 if (newState) {
                     addEdgeHandle()
                     // addNotchHandle()
@@ -255,15 +260,15 @@ class FloatingPanelService : Service() {
                     }
                     val isLandscape = resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
                     val shouldShowHandle = if (isLandscape && !panelPrefs.showInLandscape) false
-                                          else if (panelPrefs.onlyOnHome && !isCurrentPackageLauncher()) false
-                                          else true
+                    else if (panelPrefs.onlyOnHome && !isCurrentPackageLauncher()) false
+                    else true
 
                     if (!shouldShowHandle) {
                         edgeHandleView?.visibility = View.GONE
                         // Also remove it from WM to be sure it doesn't block touches
                         removeView(edgeHandleView)
                         edgeHandleView = null
-                        
+
                         // Also hide notch handle if onlyOnHome is active and not on home
                         notchHandleView?.visibility = View.GONE
                     } else {
@@ -277,17 +282,17 @@ class FloatingPanelService : Service() {
                     val currentPkg = panelPrefs.currentForegroundPackage
                     val isGame = panelPrefs.getGameApps().contains(currentPkg)
                     edgeHandleView?.isGameActive = isGame
-                    
+
                     sidePanelView?.updateStyles()
                     sidePanelView?.refreshIcons()
-                    
+
                     // Update side/picker gravity in case it changed
                     val isRightSide = panelPrefs.panelSide == PanelPreferences.SIDE_RIGHT
                     sidePanelView?.let { panel ->
                         val lp = panel.layoutParams as? android.widget.FrameLayout.LayoutParams
                         if (lp != null) {
                             lp.gravity = if (isRightSide) Gravity.END or Gravity.CENTER_VERTICAL
-                                         else Gravity.START or Gravity.CENTER_VERTICAL
+                            else Gravity.START or Gravity.CENTER_VERTICAL
                             panel.layoutParams = lp
                         }
                     }
@@ -295,7 +300,7 @@ class FloatingPanelService : Service() {
                         val lp = picker.layoutParams as? android.widget.FrameLayout.LayoutParams
                         if (lp != null) {
                             lp.gravity = if (isRightSide) Gravity.END or Gravity.CENTER_VERTICAL
-                                         else Gravity.START or Gravity.CENTER_VERTICAL
+                            else Gravity.START or Gravity.CENTER_VERTICAL
                             picker.layoutParams = lp
                         }
                     }
@@ -303,13 +308,13 @@ class FloatingPanelService : Service() {
                     pickerPanelView?.applyTheme()
                     pickerPanelView?.clearIcons()
                     updateBlur(isPanelOpen)
-                    
+
                     if (!isPanelOpen) {
                         isPickerOpen = false
                         pickerPanelView?.visibility = View.GONE
                         sidePanelView?.animatePickerToggle(false)
                     } else if (isPickerOpen) {
-                        pickerPanelView?.loadApps() 
+                        pickerPanelView?.loadApps()
                     }
                     refreshApps()
                 }
@@ -348,12 +353,12 @@ class FloatingPanelService : Service() {
     private fun toggleFlashlight() {
         try {
             val manager = cameraManager ?: getSystemService(Context.CAMERA_SERVICE) as android.hardware.camera2.CameraManager
-            
+
             val cameraId = manager.cameraIdList.firstOrNull { id ->
                 val chars = manager.getCameraCharacteristics(id)
                 chars.get(android.hardware.camera2.CameraCharacteristics.FLASH_INFO_AVAILABLE) == true
             }
-            
+
             if (cameraId == null) {
                 Log.e(TAG, "No flashlight-capable camera found!")
                 return
@@ -362,16 +367,16 @@ class FloatingPanelService : Service() {
             // Redundant check: if our master boolean says ON, or if we have ANY active torch IDs
             val currentState = isFlashlightOn || activeTorches.isNotEmpty()
             val newState = !currentState
-            
+
             Log.d(TAG, "toggleFlashlight: Toggling to $newState (current state: $currentState, activeTorches: $activeTorches)")
-            
+
             lastManualToggleTime = System.currentTimeMillis()
             isFlashlightOn = newState
             if (newState) activeTorches.add(cameraId) else activeTorches.clear()
-            
+
             manager.setTorchMode(cameraId, newState)
             showIndicator(if (newState) getString(R.string.indicator_flashlight_on) else getString(R.string.indicator_flashlight_off))
-            
+
         } catch (e: Exception) {
             Log.e(TAG, "Failed to toggle flashlight", e)
         }
@@ -400,7 +405,7 @@ class FloatingPanelService : Service() {
                 startActivity(intent)
                 return
             }
-            
+
             val current = android.provider.Settings.System.getInt(contentResolver, android.provider.Settings.System.ACCELEROMETER_ROTATION, 0)
             val newState = if (current == 1) 0 else 1
             android.provider.Settings.System.putInt(contentResolver, android.provider.Settings.System.ACCELEROMETER_ROTATION, newState)
@@ -436,7 +441,7 @@ class FloatingPanelService : Service() {
         try {
             cameraManager?.unregisterTorchCallback(torchCallback)
         } catch (e: Exception) {}
-        
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             TileService.requestListeningState(this, android.content.ComponentName(this, PanelTileService::class.java))
         }
@@ -455,7 +460,7 @@ class FloatingPanelService : Service() {
 
     override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
         super.onConfigurationChanged(newConfig)
-        
+
         // Always close panel on orientation change to prevent layout corruption
         if (isPanelOpen) {
             closePanel(immediate = true)
@@ -497,11 +502,11 @@ class FloatingPanelService : Service() {
         }
         val resolveInfo = packageManager.resolveActivity(intent, android.content.pm.PackageManager.MATCH_DEFAULT_ONLY)
         val homePkg = resolveInfo?.activityInfo?.packageName
-        
+
         // Also check all installed launchers as some devices have multiple or third-party ones
         val allLaunchers = packageManager.queryIntentActivities(intent, android.content.pm.PackageManager.MATCH_DEFAULT_ONLY)
             .map { it.activityInfo.packageName }
-        
+
         return currentPkg == homePkg || allLaunchers.contains(currentPkg) || currentPkg == "com.android.systemui"
     }
 
@@ -545,10 +550,10 @@ class FloatingPanelService : Service() {
     }
 
     private fun addEdgeHandle(forceRecreate: Boolean = false) {
-        val anyTriggerEnabled = panelPrefs.gesturesEnabled || 
-                                panelPrefs.tapToOpen || 
-                                panelPrefs.doubleTapToOpen || 
-                                panelPrefs.tripleTapToOpen
+        val anyTriggerEnabled = panelPrefs.gesturesEnabled ||
+                panelPrefs.tapToOpen ||
+                panelPrefs.doubleTapToOpen ||
+                panelPrefs.tripleTapToOpen
 
         // --- MANDATORY ENGINE CHECK ---
         // If neither Accessibility is ON nor Native Automation is POSSIBLE, we must NOT show the handle.
@@ -568,7 +573,7 @@ class FloatingPanelService : Service() {
             if (params != null) {
                 // 1. Update gravity if side changed
                 val newGravity = if (isRight) Gravity.END or Gravity.CENTER_VERTICAL
-                                 else Gravity.START or Gravity.CENTER_VERTICAL
+                else Gravity.START or Gravity.CENTER_VERTICAL
                 params.gravity = newGravity
 
                 // 2. Update size and position
@@ -576,23 +581,23 @@ class FloatingPanelService : Service() {
                 val screenH = resources.displayMetrics.heightPixels
                 val safeMargin = (10 * density).toInt()
                 val h = if (isPillVisible) (panelPrefs.handleHeight * density).toInt()
-                        else (screenH * 0.60f).toInt()
+                else (screenH * 0.60f).toInt()
                 val maxOffset = (screenH / 2) - (h / 2) - safeMargin
                 val requestedOffset = (panelPrefs.handleVerticalOffset * density).toInt()
 
                 params.width = (panelPrefs.handleWidth * density).toInt()
                 params.height = h
                 params.y = requestedOffset.coerceIn(-maxOffset, maxOffset)
-                
+
                 try {
                     windowManager.updateViewLayout(edgeHandleView, params)
                 } catch (e: Exception) {}
             }
-            
+
             edgeHandleView?.updateState(
-                isRight, 
-                isPillVisible, 
-                this.isImmersiveMode, 
+                isRight,
+                isPillVisible,
+                this.isImmersiveMode,
                 panelPrefs.panelOpacity
             )
             return
@@ -624,8 +629,8 @@ class FloatingPanelService : Service() {
         }
 
         val handleWidth = panelPrefs.handleWidth // Use user-defined width
-        val handleHeight = if (isPillVisible) dpToPx(panelPrefs.handleHeight) 
-                           else dpToPx((panelPrefs.handleHeight * 1.5f).toInt())
+        val handleHeight = if (isPillVisible) dpToPx(panelPrefs.handleHeight)
+        else dpToPx((panelPrefs.handleHeight * 1.5f).toInt())
 
         // Fix: Use FLAG_LAYOUT_NO_LIMITS carefully or ensure GRAVITY_CENTER doesn't overflow
         val params = WindowManager.LayoutParams(
@@ -639,16 +644,16 @@ class FloatingPanelService : Service() {
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = if (isRight) Gravity.END or Gravity.CENTER_VERTICAL
-                      else Gravity.START or Gravity.CENTER_VERTICAL
-            
+            else Gravity.START or Gravity.CENTER_VERTICAL
+
             // Calculate absolute max offset to keep handle on screen
             val screenH = resources.displayMetrics.heightPixels
             val safeMargin = dpToPx(10) // Keep away from extreme top/bottom edges
             val maxOffset = (screenH / 2) - (handleHeight / 2) - safeMargin
-            
+
             val requestedOffset = dpToPx(panelPrefs.handleVerticalOffset)
             y = requestedOffset.coerceIn(-maxOffset, maxOffset)
-            
+
             // Log.d(TAG, "Handle Params: width=$width, height=$height, y=$y (requested=$requestedOffset, max=$maxOffset)")
         }
 
@@ -660,7 +665,7 @@ class FloatingPanelService : Service() {
             onClose = { closePanel() }
             onAppsChanged = { refreshApps() }
             onAddClick = { isEdit -> togglePicker(isEdit) }
-            onScreenshot = { 
+            onScreenshot = {
                 closePanel()
                 Handler(Looper.getMainLooper()).postDelayed({
                     triggerScreenshot()
@@ -683,7 +688,7 @@ class FloatingPanelService : Service() {
                     "smartedge.tool.brightness_down" -> adjustBrightness(-15)
                 }
             }
-            visibility = View.GONE 
+            visibility = View.GONE
         }
         refreshApps()
     }
@@ -705,7 +710,7 @@ class FloatingPanelService : Service() {
                     refreshApps()
                 }
             }
-            visibility = View.GONE 
+            visibility = View.GONE
         }
     }
 
@@ -805,16 +810,16 @@ class FloatingPanelService : Service() {
                         if (packageName != null) {
                             val dropY = event.y
                             val screenHeight = v.height
-                            
+
                             val mode = when {
                                 dropY < screenHeight * 0.30 -> SplitScreenHelper.MODE_TOP
                                 dropY > screenHeight * 0.70 -> SplitScreenHelper.MODE_BOTTOM
                                 else -> SplitScreenHelper.MODE_FREEFORM
                             }
-                            
+
                             // Don't close panel IMMEDIATELY here, wait for DRAG_ENDED
                             // or it can leave a stuck drag shadow on some Android versions.
-                            
+
                             // Delegate to Accessibility Service for higher privilege launch
                             val splitIntent = Intent(this@FloatingPanelService, PanelAccessibilityService::class.java).apply {
                                 action = PanelAccessibilityService.ACTION_SPLIT_SCREEN
@@ -850,7 +855,7 @@ class FloatingPanelService : Service() {
                     WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
             PixelFormat.TRANSLUCENT
         )
-        
+
         rootLayout?.addView(sidePanelView)
         rootLayout?.addView(pickerPanelView)
     }
@@ -871,7 +876,7 @@ class FloatingPanelService : Service() {
             lp.width = android.widget.FrameLayout.LayoutParams.WRAP_CONTENT
             lp.height = android.widget.FrameLayout.LayoutParams.MATCH_PARENT
             lp.gravity = if (isRight) Gravity.END or Gravity.CENTER_VERTICAL
-                         else Gravity.START or Gravity.CENTER_VERTICAL
+            else Gravity.START or Gravity.CENTER_VERTICAL
             panel.layoutParams = lp
             panel.alpha = 0f
             panel.translationX = if (isRight) 1000f else -1000f
@@ -909,7 +914,7 @@ class FloatingPanelService : Service() {
 
         val wasOpen = isPanelOpen
         isPanelOpen = false
-        
+
         if (immediate) {
             if (isPickerOpen) {
                 isPickerOpen = false
@@ -922,7 +927,7 @@ class FloatingPanelService : Service() {
             }
             edgeHandleView?.visibility = View.VISIBLE
             sidePanelView?.animatePickerToggle(false)
-            
+
             if (!panelPrefs.serviceEnabled) {
                 stopSelf()
             }
@@ -950,8 +955,8 @@ class FloatingPanelService : Service() {
                     try { windowManager.removeView(rootLayout) } catch (e: Exception) {}
                 }
                 edgeHandleView?.visibility = View.VISIBLE
-                panel.animatePickerToggle(false) 
-                
+                panel.animatePickerToggle(false)
+
                 // If service is NOT enabled in prefs, stop it now (Test mode over)
                 if (!panelPrefs.serviceEnabled) {
                     stopSelf()
@@ -992,29 +997,29 @@ class FloatingPanelService : Service() {
             val density = resources.displayMetrics.density
             val sidePanelWidthDp = 72
             val sidePanelMarginDp = 12
-            
+
             // Dynamic Height calculation for Picker Panel based on Screen Height
             val displayMetrics = resources.displayMetrics
             val screenHeightPx = displayMetrics.heightPixels
             val screenHeightDp = screenHeightPx / displayMetrics.density
-            
+
             // Max height for picker: User preference, with a sane minimum for usability
             val maxAllowedHeightDp = Math.max(300f, panelPrefs.pickerMaxHeight.toFloat())
             val maxPickerHeightPx = (maxAllowedHeightDp * displayMetrics.density).toInt()
 
             val lp = android.widget.FrameLayout.LayoutParams(dpToPx(240), android.widget.FrameLayout.LayoutParams.WRAP_CONTENT)
-            
+
             lp.gravity = if (isRight) Gravity.CENTER_VERTICAL or Gravity.END
-                         else Gravity.CENTER_VERTICAL or Gravity.START
-            
+            else Gravity.CENTER_VERTICAL or Gravity.START
+
             // Fixed alignment calculation: Sidepanel occupies (margin + width) space
             val gapPx = ((sidePanelWidthDp + sidePanelMarginDp + panelPrefs.pickerGap) * displayMetrics.density).toInt()
             if (isRight) lp.marginEnd = gapPx else lp.marginStart = gapPx
-            
+
             picker.layoutParams = lp
             // Force the internal RecyclerView to not exceed a certain height
             picker.setMaxRecyclerViewHeight(maxPickerHeightPx - dpToPx(80)) // Subtract header space (approx 80dp)
-            
+
             picker.alpha = 0f
             picker.visibility = View.VISIBLE
             picker.handleKeyboard()
@@ -1036,7 +1041,7 @@ class FloatingPanelService : Service() {
         Handler(Looper.getMainLooper()).postDelayed({
             if (!isPickerOpen) {
                 val originalCols = panelPrefs.panelColumns
-                sidePanelView?.setEditButtonVisible(false) 
+                sidePanelView?.setEditButtonVisible(false)
                 sidePanelView?.setColumns(originalCols)
             }
         }, 250)
@@ -1058,33 +1063,33 @@ class FloatingPanelService : Service() {
     private fun refreshApps(onComplete: (() -> Unit)? = null) {
         serviceScope.launch {
             val repository = AppRepository(this@FloatingPanelService)
-            
+
             val apps = if (currentFolderId != null) {
                 when (currentFolderId) {
                     "smartedge.folder.tools" -> {
                         val tools = mutableListOf<AppInfo>()
-                        
+
                         // Always include screenshot in the folder if the folder is active
                         tools.add(AppInfo("smartedge.tool.screenshot", "Screenshot", type = AppInfo.Type.TOOL))
-                        
+
                         // Add Volume tools
                         tools.add(AppInfo("smartedge.tool.volume_up", "Volume +", type = AppInfo.Type.TOOL))
                         tools.add(AppInfo("smartedge.tool.volume_down", "Volume -", type = AppInfo.Type.TOOL))
-                        
+
                         // Add Brightness tools
                         tools.add(AppInfo("smartedge.tool.brightness_up", "Brightness +", type = AppInfo.Type.TOOL))
                         tools.add(AppInfo("smartedge.tool.brightness_down", "Brightness -", type = AppInfo.Type.TOOL))
-                        
+
                         // Always include power menu in the folder if the folder is active
                         tools.add(AppInfo("smartedge.shortcut.reboot", "Power Menu", type = AppInfo.Type.SHORTCUT))
-                        
+
                         tools
                     }
                     else -> emptyList<AppInfo>()
                 }
             } else {
                 val baseApps = repository.getPanelApps().toMutableList()
-                
+
                 // Add "Tools" folder button at the top if enabled
                 if (panelPrefs.showToolsPanelButton) {
                     val toolsBtn = AppInfo("smartedge.tool.tools", "Tools", type = AppInfo.Type.TOOL)
@@ -1092,10 +1097,10 @@ class FloatingPanelService : Service() {
                         baseApps.add(0, toolsBtn)
                     }
                 }
-                
+
                 baseApps
             }
-            
+
             sidePanelView?.setApps(apps, onComplete)
         }
     }
@@ -1162,7 +1167,7 @@ class FloatingPanelService : Service() {
 
     private fun initDragOverlay() {
         if (dragOverlay != null) return
-        
+
         val density = resources.displayMetrics.density
         dragOverlay = android.widget.FrameLayout(this).apply {
             setBackgroundColor(android.graphics.Color.parseColor("#4D000000")) // 30% Dim
@@ -1191,13 +1196,13 @@ class FloatingPanelService : Service() {
             }
         }
 
-        tvTopZone = createZone("TOP SPLIT", Gravity.TOP).apply { 
+        tvTopZone = createZone("TOP SPLIT", Gravity.TOP).apply {
             layoutParams.height = (resources.displayMetrics.heightPixels * 0.28).toInt()
         }
-        tvBottomZone = createZone("BOTTOM SPLIT", Gravity.BOTTOM).apply { 
+        tvBottomZone = createZone("BOTTOM SPLIT", Gravity.BOTTOM).apply {
             layoutParams.height = (resources.displayMetrics.heightPixels * 0.28).toInt()
         }
-        tvFreeformZone = createZone("FREEFORM WINDOW", Gravity.CENTER).apply { 
+        tvFreeformZone = createZone("FREEFORM WINDOW", Gravity.CENTER).apply {
             layoutParams.height = (resources.displayMetrics.heightPixels * 0.30).toInt()
         }
 
@@ -1244,11 +1249,11 @@ class FloatingPanelService : Service() {
     }
 
     private fun updateDragOverlay(y: Float, screenHeight: Int) {
-        val reset = { v: View? -> 
+        val reset = { v: View? ->
             v?.alpha = 0.5f
             (v?.background as? android.graphics.drawable.GradientDrawable)?.setColor(android.graphics.Color.parseColor("#33FFFFFF"))
         }
-        val highlight = { v: View? -> 
+        val highlight = { v: View? ->
             v?.alpha = 1.0f
             (v?.background as? android.graphics.drawable.GradientDrawable)?.setColor(android.graphics.Color.parseColor("#804A9EFF"))
         }
@@ -1268,12 +1273,12 @@ class FloatingPanelService : Service() {
         if (delta == 0) return
         val audioManager = getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
         val direction = if (delta > 0) android.media.AudioManager.ADJUST_RAISE else android.media.AudioManager.ADJUST_LOWER
-        
+
         // Repeat the adjustment for the magnitude of delta to maintain speed
         repeat(Math.abs(delta)) {
             audioManager.adjustStreamVolume(android.media.AudioManager.STREAM_MUSIC, direction, 0)
         }
-        
+
         val current = audioManager.getStreamVolume(android.media.AudioManager.STREAM_MUSIC)
         val max = audioManager.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC)
         val percent = if (max > 0) (current * 100) / max else 0
@@ -1295,15 +1300,15 @@ class FloatingPanelService : Service() {
 
             val cResolver = contentResolver
             // 1. Ensure manual mode to allow manual override
-            android.provider.Settings.System.putInt(cResolver, 
-                android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE, 
+            android.provider.Settings.System.putInt(cResolver,
+                android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE,
                 android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL)
 
             // 2. Update standard int brightness (0-255)
             var brightness = android.provider.Settings.System.getInt(cResolver, android.provider.Settings.System.SCREEN_BRIGHTNESS, 125)
             brightness = (brightness + delta).coerceIn(0, 255)
             android.provider.Settings.System.putInt(cResolver, android.provider.Settings.System.SCREEN_BRIGHTNESS, brightness)
-            
+
             // 3. Update modern float brightness for slider sync on Android 10+
             val floatVal = brightness / 255f
             try {
@@ -1328,48 +1333,90 @@ class FloatingPanelService : Service() {
     }
 
     private fun showIndicator(text: String) {
-        val root = rootLayout
-        if (root != null) {
-            if (indicatorText == null) {
-                val density = resources.displayMetrics.density
 
-                indicatorText = android.widget.TextView(this).apply {
-                    setTextColor(android.graphics.Color.WHITE)
-                    textSize = 14f
-                    setPadding((16 * density).toInt(), (10 * density).toInt(), (16 * density).toInt(), (10 * density).toInt())
-                    gravity = android.view.Gravity.CENTER
-                    
-                    background = android.graphics.drawable.GradientDrawable().apply {
-                        setColor(android.graphics.Color.parseColor("#E6303030"))
-                        cornerRadius = 24f * density
-                    }
+        val windowManager = getSystemService(Context.WINDOW_SERVICE) as android.view.WindowManager
+        val density = resources.displayMetrics.density
 
-                    layoutParams = android.widget.FrameLayout.LayoutParams(
-                        android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
-                        android.view.ViewGroup.LayoutParams.WRAP_CONTENT
-                    ).apply {
-                        gravity = android.view.Gravity.BOTTOM or android.view.Gravity.CENTER_HORIZONTAL
-                        bottomMargin = (90 * density).toInt()
-                    }
-                    elevation = 8f * density
-                }
-                root.addView(indicatorText)
-            }
-
-            indicatorText?.text = text
-            indicatorText?.visibility = View.VISIBLE
-            indicatorText?.alpha = 1f
-            indicatorText?.animate()?.cancel()
-            
-            indicatorFadeRunnable?.let { handler.removeCallbacks(it) }
-            indicatorFadeRunnable = Runnable {
-                indicatorText?.animate()
-                    ?.alpha(0f)
-                    ?.setDuration(300)
-                    ?.withEndAction { indicatorText?.visibility = View.GONE }
-                    ?.start()
-            }
-            handler.postDelayed(indicatorFadeRunnable!!, 1500)
+        // 1. Yazı Tipi Avcısı
+        val nothingTypeface = try {
+            val tfByName1 = android.graphics.Typeface.create("ndot-57", android.graphics.Typeface.NORMAL)
+            val tfByName2 = android.graphics.Typeface.create("ndot", android.graphics.Typeface.NORMAL)
+            if (tfByName1 != android.graphics.Typeface.DEFAULT) tfByName1 else tfByName2
+        } catch (e: Exception) {
+            android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD)
         }
+
+        // 2. Kapsayıcı ve Tasarım Alanı (Sadece ilk seferde oluşturulur)
+        if (globalContainer == null) {
+            globalContainer = android.widget.FrameLayout(this)
+
+            globalIndicatorText = android.widget.TextView(this).apply {
+                textSize = 15f
+                setPadding((16 * density).toInt(), (10 * density).toInt(), (16 * density).toInt(), (10 * density).toInt())
+                gravity = android.view.Gravity.CENTER
+                typeface = android.graphics.Typeface.create(nothingTypeface, android.graphics.Typeface.BOLD)
+                paintFlags = paintFlags or android.graphics.Paint.FAKE_BOLD_TEXT_FLAG
+                setSingleLine(true)
+            }
+
+            val layoutParams = android.widget.FrameLayout.LayoutParams(
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply { gravity = android.view.Gravity.CENTER }
+
+            globalContainer?.addView(globalIndicatorText, layoutParams)
+        }
+
+        // --- RENK GÜNCELLEME (Her seferinde çalışır) ---
+        val (bgColor, txtColor) = when {
+            text.contains("Volume", ignoreCase = true) -> "#FDCA21" to "#FF181F18"
+            text.contains("Brightness", ignoreCase = true) -> "#0C4E82" to "#FFFFFFFF"
+            // İstediğin renkleri buraya yazabilirsin
+            else -> "#FDCA21" to "#FF181F18"
+        }
+
+        globalContainer?.background = android.graphics.drawable.GradientDrawable().apply {
+            setColor(android.graphics.Color.parseColor(bgColor))
+            cornerRadius = 20f * density
+        }
+        // ------------------------------------------------
+
+        globalIndicatorText?.text = text
+        globalIndicatorText?.setTextColor(android.graphics.Color.parseColor(txtColor))
+        // 3. WindowManager Katman Yönetimi
+        if (!isIndicatorVisible && globalContainer != null) {
+            val uniqueIndicatorParams = android.view.WindowManager.LayoutParams(
+                android.view.WindowManager.LayoutParams.WRAP_CONTENT,
+                android.view.WindowManager.LayoutParams.WRAP_CONTENT,
+                android.view.WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                        android.view.WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+                android.graphics.PixelFormat.TRANSLUCENT
+            ).apply {
+                gravity = android.view.Gravity.BOTTOM or android.view.Gravity.CENTER_HORIZONTAL
+                y = (110 * density).toInt()
+                alpha = 1.0f
+            }
+
+            try {
+                windowManager.addView(globalContainer, uniqueIndicatorParams)
+                isIndicatorVisible = true
+            } catch (e: Exception) {
+                android.util.Log.e("SidebarHUD", "Ekleme hatası: ${e.message}")
+            }
+        }
+
+        // 4. Zamanlayıcı ve Kaldırma
+        indicatorRemoveRunnable?.let { indicatorHandler.removeCallbacks(it) }
+        indicatorRemoveRunnable = Runnable {
+            if (isIndicatorVisible && globalContainer != null) {
+                try {
+                    windowManager.removeViewImmediate(globalContainer)
+                } catch (e: Exception) {}
+                isIndicatorVisible = false
+            }
+        }
+        indicatorHandler.postDelayed(indicatorRemoveRunnable!!, 1200)
     }
+
 }
